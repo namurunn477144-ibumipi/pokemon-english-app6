@@ -6,17 +6,11 @@
   <title>えいごクイズ - 英検5級への道</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* 黄緑基調のカラーパレット */
     :root {
-      --primary: #8BC34A;
-      --primary-shadow: #689F38;
-      --secondary: #FFB300;
-      --secondary-shadow: #FF8F00;
-      --bg-color: #F1F8E9;
-      --card-bg: #FFFFFF;
-      --text-main: #3E2723;
-      --correct: #4CAF50;
-      --incorrect: #F44336;
+      --primary: #8BC34A; --primary-shadow: #689F38;
+      --secondary: #FFB300; --secondary-shadow: #FF8F00;
+      --bg-color: #F1F8E9; --card-bg: #FFFFFF;
+      --text-main: #3E2723; --correct: #4CAF50; --incorrect: #F44336;
     }
     * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; padding: 0; background-color: var(--bg-color); background-image: radial-gradient(#DCEDC8 2px, transparent 2px); background-size: 20px 20px; color: var(--text-main); overflow-x: hidden; touch-action: manipulation; }
@@ -28,17 +22,25 @@
     .app-header { text-align: center; margin-bottom: 10px; }
     #main-title { font-size: 2rem; color: var(--primary-shadow); line-height: 1.2; text-shadow: 2px 2px 0px #FFF; margin: 10px 0; }
     
-    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; overflow: hidden; }
+    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; overflow: hidden; cursor: pointer; }
     #partner-image { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)); animation: float 3s ease-in-out infinite; transition: transform 0.3s; z-index: 2; position: relative; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-    #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; }
+    #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; pointer-events: none; }
+    
+    /* タップ時のエフェクト用アニメーション */
+    @keyframes jumpPoke { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+    .anim-jump { animation: jumpPoke 0.4s ease !important; }
+    @keyframes spinPoke { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+    .anim-spin { animation: spinPoke 0.5s ease !important; }
+    @keyframes shakePoke { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
+    .anim-shake { animation: shakePoke 0.4s ease !important; }
+    @keyframes chew { 0% { transform: scale(1); } 25% { transform: scale(1.15) rotate(-5deg); } 50% { transform: scale(0.95) rotate(5deg); } 75% { transform: scale(1.1) rotate(-3deg); } 100% { transform: scale(1); } }
+    .anim-chew { animation: chew 0.5s ease-in-out !important; }
     
     .eating-msg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; color: #FF5722; font-weight: 900; opacity: 0; pointer-events: none; text-shadow: 2px 2px 0 #FFF; transition: all 0.3s; z-index: 3; }
     .flying-food { position: fixed; font-size: 2.5rem; z-index: 1000; transition: all 0.5s cubic-bezier(0.5, -0.5, 1, 1); pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
     .heart-anim { position: absolute; font-size: 2rem; bottom: 40%; opacity: 0; animation: floatUpHeart 1s ease-out; pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
     @keyframes floatUpHeart { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-60px) scale(1.5); opacity: 0; } }
-    @keyframes chew { 0% { transform: scale(1); } 25% { transform: scale(1.15) rotate(-5deg); } 50% { transform: scale(0.95) rotate(5deg); } 75% { transform: scale(1.1) rotate(-3deg); } 100% { transform: scale(1); } }
-    .anim-chew { animation: chew 0.5s ease-in-out !important; }
     
     .status-board { width: 100%; background: #EFEBE9; padding: 12px 20px; border-radius: 16px; margin-bottom: 15px; }
     .exp-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
@@ -64,7 +66,7 @@
     .btn-large { width: 100%; padding: 16px; font-size: 1.4rem; }
     .btn-primary { background: var(--secondary); color: white; box-shadow: 0 8px 0 var(--secondary-shadow); }
     .btn-primary:active { transform: translateY(8px); box-shadow: 0 0 0 var(--secondary-shadow); }
-    .btn-danger { background: #4CAF50; color: white; box-shadow: 0 8px 0 #388E3C; }
+    .btn-danger { background: #4CAF50; color: white; box-shadow: 0 8px 0 #388E3C; } 
     .btn-danger:active { transform: translateY(8px); box-shadow: 0 0 0 #388E3C; }
     
     .quiz-header-bar { margin-bottom: 15px; }
@@ -108,7 +110,8 @@
 <div id="app">
   <div id="room-view" class="view active">
     <header class="app-header"><h1 id="main-title">えいごクイズ</h1></header>
-    <div class="partner-stage">
+    <!-- ポケモンをタップできるように onclick を追加 -->
+    <div class="partner-stage" onclick="interactPokemon()">
       <img id="partner-image" src="" alt="パートナー">
       <div id="eating-msg" class="eating-msg">もぐもぐ♪</div>
       <h2 id="partner-name">読み込み中...</h2>
@@ -123,7 +126,7 @@
     </div>
     <div class="action-buttons">
       <button id="start-quiz-btn" class="btn btn-primary btn-large">クイズをする (4もん)</button>
-      <button id="reset-game-btn" class="btn btn-danger btn-large" style="margin-top:10px;">あたらしいポケモンとあそぶ🔄</button>
+      <button id="reset-game-btn" class="btn btn-danger btn-large hidden" style="margin-top:10px;">あたらしいポケモンとあそぶ🔄</button>
     </div>
   </div>
 
@@ -148,7 +151,7 @@
 </div>
 
 <script>
-  // 2段階進化するポケモン10種
+  // 全24種類のポケモンデータ
 const pokemonFamilies = [
   { stage0: {id: 172, name: "ピチュー"}, stage1: {id: 25, name: "ピカチュウ"}, stage2: {id: 26, name: "ライチュウ"} },
   { stage0: {id: 92, name: "ゴース"}, stage1: {id: 93, name: "ゴースト"}, stage2: {id: 94, name: "ゲンガー"} },
@@ -159,7 +162,21 @@ const pokemonFamilies = [
   { stage0: {id: 574, name: "ゴチム"}, stage1: {id: 575, name: "ゴチミル"}, stage2: {id: 576, name: "ゴチルゼル"} },
   { stage0: {id: 607, name: "ヒトモシ"}, stage1: {id: 608, name: "ランプラー"}, stage2: {id: 609, name: "シャンデラ"} },
   { stage0: {id: 722, name: "モクロー"}, stage1: {id: 723, name: "フクスロー"}, stage2: {id: 724, name: "ジュナイパー"} },
-  { stage0: {id: 728, name: "アシマリ"}, stage1: {id: 729, name: "オシャマリ"}, stage2: {id: 730, name: "アシレーヌ"} }
+  { stage0: {id: 728, name: "アシマリ"}, stage1: {id: 729, name: "オシャマリ"}, stage2: {id: 730, name: "アシレーヌ"} },
+  { stage0: {id: 912, name: "クワッス"}, stage1: {id: 913, name: "ウェルカモ"}, stage2: {id: 914, name: "ウェーニバル"} },
+  { stage0: {id: 909, name: "ホゲータ"}, stage1: {id: 910, name: "アチゲータ"}, stage2: {id: 911, name: "ラウドボーン"} },
+  { stage0: {id: 4, name: "ヒトカゲ"}, stage1: {id: 5, name: "リザード"}, stage2: {id: 6, name: "リザードン"} },
+  { stage0: {id: 1, name: "フシギダネ"}, stage1: {id: 2, name: "フシギソウ"}, stage2: {id: 3, name: "フシギバナ"} },
+  { stage0: {id: 906, name: "ニャオハ"}, stage1: {id: 907, name: "ニャローテ"}, stage2: {id: 908, name: "マスカーニャ"} },
+  { stage0: {id: 813, name: "ヒバニー"}, stage1: {id: 814, name: "ラビフット"}, stage2: {id: 815, name: "エースバーン"} },
+  { stage0: {id: 816, name: "メッソン"}, stage1: {id: 817, name: "ジメレオン"}, stage2: {id: 818, name: "インテレオン"} },
+  { stage0: {id: 810, name: "サルノリ"}, stage1: {id: 811, name: "バチンキー"}, stage2: {id: 812, name: "ゴリランダー"} },
+  { stage0: {id: 582, name: "バニプッチ"}, stage1: {id: 583, name: "バニリッチ"}, stage2: {id: 584, name: "バイバニラ"} },
+  { stage0: {id: 280, name: "ラルトス"}, stage1: {id: 281, name: "キルリア"}, stage2: {id: 282, name: "サーナイト"} },
+  { stage0: {id: 298, name: "ルリリ"}, stage1: {id: 183, name: "マリル"}, stage2: {id: 184, name: "マリルリ"} },
+  { stage0: {id: 438, name: "ピンプク"}, stage1: {id: 113, name: "ラッキー"}, stage2: {id: 242, name: "ハピナス"} },
+  { stage0: {id: 173, name: "ピィ"}, stage1: {id: 35, name: "ピッピ"}, stage2: {id: 36, name: "ピクシー"} },
+  { stage0: {id: 174, name: "ププリン"}, stage1: {id: 39, name: "プリン"}, stage2: {id: 40, name: "プクリン"} }
 ];
 
 const allFoods = [
@@ -167,8 +184,7 @@ const allFoods = [
   { name: "カレー", emoji: "🍛" }, { name: "ピザ", emoji: "🍕" }, { name: "アイス", emoji: "🍦" }, { name: "ドーナツ", emoji: "🍩" }, 
   { name: "パンケーキ", emoji: "🥞" }, { name: "ステーキ", emoji: "🥩" }, { name: "サンドイッチ", emoji: "🥪" }, { name: "たこやき", emoji: "🐙" }
 ];
-
-// Q1: 穴あき問題（30問）
+  // Q1: 穴あき問題（30問）
 const q1Data = [
   { text: "I ( ___ ) an apple.", ja: "わたしは りんごを たべます。", correct: "eat", options: ["eat", "play", "read", "swim"] },
   { text: "The cat is ( ___ ) the desk.", ja: "ねこは つくえの したに います。", correct: "under", options: ["in", "on", "under", "at"] },
@@ -303,9 +319,7 @@ const q4Data = [
   { text: "A: Can I help you?", ja: "いらっしゃいませ。", correct: "Yes, please.", options: ["Yes, please.", "You're welcome.", "That's OK.", "I am fine."] },
   { text: "A: This is for you.", ja: "これ、あなたに。", correct: "Thank you.", options: ["Thank you.", "You're welcome.", "Yes, I am.", "That's OK."] }
 ];
-  // --- ここからゲームのロジック ---
-
-function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
+  function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
 let totalExp = 0, evolutionStage = 0; // 0=初期, 1=1段階, 2=2段階
 let currentFamily = null;
@@ -318,12 +332,20 @@ const roomView = document.getElementById('room-view'), quizView = document.getEl
 const foodListEl = document.getElementById('food-list'), expText = document.getElementById('exp-text'), expBar = document.getElementById('exp-bar');
 const partnerImg = document.getElementById('partner-image'), partnerName = document.getElementById('partner-name');
 const evolveImg = document.getElementById('evolve-image');
+const resetBtn = document.getElementById('reset-game-btn');
 
 function initNewGame() {
   currentFamily = pokemonFamilies[Math.floor(Math.random() * pokemonFamilies.length)];
   totalExp = 0; evolutionStage = 0;
   activeFoods = [...allFoods].sort(() => 0.5 - Math.random()).slice(0, 4).map((f, i) => ({ ...f, unlockExp: (i + 1) * 25, isEaten: false }));
   renderRoom();
+}
+
+// 今表示しているポケモンのIDを取得するヘルパー
+function getCurrentPokeId() {
+  if(evolutionStage === 0) return currentFamily.stage0.id;
+  if(evolutionStage === 1) return currentFamily.stage1.id;
+  return currentFamily.stage2.id;
 }
 
 function renderRoom() {
@@ -334,14 +356,57 @@ function renderRoom() {
   
   expText.innerText = totalExp; expBar.style.width = totalExp + "%";
   
+  // 最終進化（2段階目）のときだけ「新しいポケモン」ボタンを表示する
+  if (evolutionStage === 2) {
+    resetBtn.classList.remove('hidden');
+  } else {
+    resetBtn.classList.add('hidden');
+  }
+  
   activeFoods.forEach((food, index) => {
     const isUnlocked = totalExp >= food.unlockExp;
     const foodEl = document.createElement('div');
     if (food.isEaten) { foodEl.className = 'food-item eaten'; foodEl.innerText = food.emoji; }
     else if (!isUnlocked) { foodEl.className = 'food-item locked'; foodEl.innerText = food.emoji; }
-    else { foodEl.className = 'food-item'; foodEl.innerText = food.emoji; if(evolutionStage < 2) foodEl.onclick = (e) => feedPartner(index, foodEl); }
+    else { foodEl.className = 'food-item'; foodEl.innerText = food.emoji; if(evolutionStage < 2) foodEl.onclick = (e) => feedPartner(index, element=foodEl); }
     foodListEl.appendChild(foodEl);
   });
+}
+
+// ポケモンをタップしたときのランダムな5種のアクション
+function interactPokemon() {
+  if(partnerImg.classList.contains('anim-jump') || partnerImg.classList.contains('anim-spin') || partnerImg.classList.contains('anim-shake') || partnerImg.classList.contains('anim-chew')) return;
+  
+  const rand = Math.floor(Math.random() * 5);
+  
+  if (rand === 0) { // ジャンプ
+    partnerImg.classList.add('anim-jump');
+    setTimeout(() => partnerImg.classList.remove('anim-jump'), 400);
+  } else if (rand === 1) { // スピン
+    partnerImg.classList.add('anim-spin');
+    setTimeout(() => partnerImg.classList.remove('anim-spin'), 500);
+  } else if (rand === 2) { // ぷるぷる震える
+    partnerImg.classList.add('anim-shake');
+    setTimeout(() => partnerImg.classList.remove('anim-shake'), 400);
+  } else if (rand === 3) { // ハートが出てジャンプ
+    spawnHearts();
+    partnerImg.classList.add('anim-jump');
+    setTimeout(() => partnerImg.classList.remove('anim-jump'), 400);
+  } else { // 鳴き声＋ぷるぷる（PokeAPIの音声ファイルを利用）
+    const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${getCurrentPokeId()}.ogg`);
+    audio.volume = 0.5;
+    audio.play().catch(e => console.log("音声の再生がブロックされました"));
+    partnerImg.classList.add('anim-shake');
+    setTimeout(() => partnerImg.classList.remove('anim-shake'), 400);
+  }
+}
+
+function spawnHearts() {
+  for(let i=0; i<4; i++) {
+    const h = document.createElement('div'); h.innerText = '💖'; h.className = 'heart-anim';
+    h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
+    document.querySelector('.partner-stage').appendChild(h); setTimeout(() => h.remove(), 1000);
+  }
 }
 
 function feedPartner(index, element) {
@@ -360,12 +425,7 @@ function feedPartner(index, element) {
   setTimeout(() => {
     flying.remove();
     const msg = document.getElementById('eating-msg'); msg.style.opacity = 1; msg.style.transform = "translate(-50%, -20px)"; partnerImg.classList.add("anim-chew");
-    
-    for(let i=0; i<4; i++) {
-      const h = document.createElement('div'); h.innerText = '💖'; h.className = 'heart-anim';
-      h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
-      document.querySelector('.partner-stage').appendChild(h); setTimeout(() => h.remove(), 1000);
-    }
+    spawnHearts();
     
     setTimeout(() => {
       msg.style.opacity = 0; msg.style.transform = "translate(-50%, 0)"; partnerImg.classList.remove("anim-chew");
@@ -380,12 +440,18 @@ function evolveAnim(targetPoke) {
   document.getElementById('evolve-image').src = getPokemonImageUrl(targetPoke.id);
   document.getElementById('evolve-text').innerHTML = `おめでとう！<br>${targetPoke.name} に しんかした！`;
   document.getElementById('evolve-overlay').classList.add('show');
+  
+  // 鳴き声を再生
+  const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${targetPoke.id}.ogg`);
+  audio.volume = 0.5;
+  audio.play().catch(e => console.log(e));
+  
   renderRoom();
 }
 
 document.getElementById('close-evolve-btn').onclick = () => document.getElementById('evolve-overlay').classList.remove('show');
 
-// ポップアップなしですぐに入れ替える
+// 新しいポケモンボタン
 document.getElementById('reset-game-btn').onclick = () => initNewGame();
 
 // クイズロジック
@@ -495,6 +561,8 @@ function renderQ3(container) {
 function renderQ4(container) {
   const q = q4Data[Math.floor(Math.random() * q4Data.length)];
   const questionText = q.text.replace('A: ', '');
+  // 問題文と答えをつなげて読み上げる設定
+  const fullConversation = questionText + " ... " + q.correct;
   
   container.innerHTML = `
     <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
@@ -505,7 +573,9 @@ function renderQ4(container) {
     <p class="question-ja">${q.ja}</p>
     <div class="options-grid" id="q4-opts"></div>
   `;
-  document.getElementById('q4-voice').onclick = () => speakCuteVoice(questionText);
+  
+  // 読み上げボタンを押すと、問題文〜答えの続きまで通して読んでくれる
+  document.getElementById('q4-voice').onclick = () => speakCuteVoice(fullConversation);
   
   const optsGrid = document.getElementById('q4-opts');
   [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
