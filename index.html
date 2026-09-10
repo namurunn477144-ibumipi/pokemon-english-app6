@@ -6,13 +6,13 @@
   <title>えいごクイズ - 英検5級への道</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* 黄緑基調のカラーパレットに変更！ */
+    /* 黄緑基調のカラーパレット */
     :root {
-      --primary: #8BC34A; /* メインの黄緑 */
+      --primary: #8BC34A;
       --primary-shadow: #689F38;
-      --secondary: #FFB300; /* アクセントのオレンジイエロー */
+      --secondary: #FFB300;
       --secondary-shadow: #FF8F00;
-      --bg-color: #F1F8E9; /* 背景のうすい緑 */
+      --bg-color: #F1F8E9;
       --card-bg: #FFFFFF;
       --text-main: #3E2723;
       --correct: #4CAF50;
@@ -64,7 +64,7 @@
     .btn-large { width: 100%; padding: 16px; font-size: 1.4rem; }
     .btn-primary { background: var(--secondary); color: white; box-shadow: 0 8px 0 var(--secondary-shadow); }
     .btn-primary:active { transform: translateY(8px); box-shadow: 0 0 0 var(--secondary-shadow); }
-    .btn-danger { background: #4CAF50; color: white; box-shadow: 0 8px 0 #388E3C; } /* 色を緑系に合わせました */
+    .btn-danger { background: #4CAF50; color: white; box-shadow: 0 8px 0 #388E3C; }
     .btn-danger:active { transform: translateY(8px); box-shadow: 0 0 0 #388E3C; }
     
     .quiz-header-bar { margin-bottom: 15px; }
@@ -77,7 +77,6 @@
     .option-btn { background: #FFF; border: 4px solid var(--primary); border-radius: 16px; padding: 12px; font-size: 1.4rem; font-weight: 800; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 15px; box-shadow: 0 6px 0 var(--primary); cursor: pointer; transition: 0.1s; }
     .option-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--primary); }
     
-    /* 並べ替え問題用CSS */
     .sort-area { min-height: 60px; background: #F5F5F5; border: 3px dashed #BDBDBD; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
     .sort-words { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
     .sort-word-btn { background: #FFF; border: 3px solid var(--secondary); border-radius: 12px; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; color: var(--text-main); box-shadow: 0 4px 0 var(--secondary-shadow); cursor: pointer; }
@@ -149,7 +148,7 @@
 </div>
 
 <script>
-  // ポケモンとごはんデータ
+  // 2段階進化するポケモン10種
 const pokemonFamilies = [
   { stage0: {id: 172, name: "ピチュー"}, stage1: {id: 25, name: "ピカチュウ"}, stage2: {id: 26, name: "ライチュウ"} },
   { stage0: {id: 92, name: "ゴース"}, stage1: {id: 93, name: "ゴースト"}, stage2: {id: 94, name: "ゲンガー"} },
@@ -304,7 +303,9 @@ const q4Data = [
   { text: "A: Can I help you?", ja: "いらっしゃいませ。", correct: "Yes, please.", options: ["Yes, please.", "You're welcome.", "That's OK.", "I am fine."] },
   { text: "A: This is for you.", ja: "これ、あなたに。", correct: "Thank you.", options: ["Thank you.", "You're welcome.", "Yes, I am.", "That's OK."] }
 ];
-  function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
+  // --- ここからゲームのロジック ---
+
+function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
 let totalExp = 0, evolutionStage = 0; // 0=初期, 1=1段階, 2=2段階
 let currentFamily = null;
@@ -338,7 +339,7 @@ function renderRoom() {
     const foodEl = document.createElement('div');
     if (food.isEaten) { foodEl.className = 'food-item eaten'; foodEl.innerText = food.emoji; }
     else if (!isUnlocked) { foodEl.className = 'food-item locked'; foodEl.innerText = food.emoji; }
-    else { foodEl.className = 'food-item'; foodEl.innerText = food.emoji; if(evolutionStage < 2) foodEl.onclick = (e) => feedPartner(index, element=foodEl); }
+    else { foodEl.className = 'food-item'; foodEl.innerText = food.emoji; if(evolutionStage < 2) foodEl.onclick = (e) => feedPartner(index, foodEl); }
     foodListEl.appendChild(foodEl);
   });
 }
@@ -490,7 +491,7 @@ function renderQ3(container) {
   });
 }
 
-// 4問目：会話の返答（バグ解消版）
+// 4問目：会話の返答
 function renderQ4(container) {
   const q = q4Data[Math.floor(Math.random() * q4Data.length)];
   const questionText = q.text.replace('A: ', '');
