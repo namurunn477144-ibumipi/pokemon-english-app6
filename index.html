@@ -6,6 +6,7 @@
   <title>えいごクイズ - いぶちゃん＆みーちゃん</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* ベースは「えいたんご（黄色・オレンジ系）」の色 */
     :root {
       --primary: #FF9800; --primary-shadow: #E65100;
       --secondary: #03A9F4; --secondary-shadow: #0277BD;
@@ -13,10 +14,13 @@
       --text-main: #3E2723; --correct: #4CAF50; --incorrect: #F44336;
       --bg-dot: #FFE0B2;
     }
+    
+    /* 「えいぶんモード」のときは黄緑系に切り替わる */
     body.mode-grammar {
       --primary: #8BC34A; --primary-shadow: #689F38;
       --secondary: #FFB300; --secondary-shadow: #FF8F00;
-      --bg-color: #F1F8E9; --bg-dot: #DCEDC8;
+      --bg-color: #F1F8E9;
+      --bg-dot: #DCEDC8;
     }
 
     * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -24,17 +28,18 @@
     
     #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
     .view { display: flex; flex-direction: column; align-items: center; padding: 15px; min-height: 100vh; transition: opacity 0.3s ease; }
-    .view.hidden { display: none; opacity: 0; }
+    .view.hidden { display: none !important; opacity: 0; }
     
     .app-header { text-align: center; margin-bottom: 10px; }
     #main-title { font-size: 2rem; color: var(--primary-shadow); line-height: 1.2; text-shadow: 2px 2px 0px #FFF; margin: 10px 0; transition: color 0.5s; }
     
-    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 40px 20px 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; cursor: pointer; }
+    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 30px 20px 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; cursor: pointer; }
     #partner-image { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)); animation: float 3s ease-in-out infinite; transition: transform 0.3s; z-index: 5; position: relative; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
     #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; pointer-events: none; }
     
-    .poke-comment { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #FFF; border: 3px solid var(--primary); border-radius: 20px; padding: 10px 20px; font-size: 1.2rem; font-weight: 900; color: var(--text-main); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+    /* 吹き出しコメント用 */
+    .poke-comment { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #FFF; border: 3px solid var(--primary); border-radius: 20px; padding: 8px 15px; font-size: 1.1rem; font-weight: 900; color: var(--text-main); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
     .poke-comment::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: var(--primary) transparent transparent transparent; }
     
     @keyframes jumpPoke { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
@@ -47,9 +52,9 @@
     .anim-chew { animation: chew 0.5s ease-in-out !important; }
     
     .eating-msg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; color: #FF5722; font-weight: 900; opacity: 0; pointer-events: none; text-shadow: 2px 2px 0 #FFF; transition: all 0.3s; z-index: 20; white-space: nowrap; }
-    .flying-food { position: fixed; font-size: 3rem; z-index: 1000; transition: all 0.5s cubic-bezier(0.5, -0.5, 1, 1); pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-    .effect-anim { position: absolute; font-size: 2.5rem; bottom: 40%; opacity: 0; animation: floatUpEffect 1s ease-out; pointer-events: none; z-index: 15; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-    @keyframes floatUpEffect { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-70px) scale(1.5) rotate(20deg); opacity: 0; } }
+    .flying-food { position: fixed; font-size: 2.5rem; z-index: 1000; transition: all 0.5s cubic-bezier(0.5, -0.5, 1, 1); pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .effect-anim { position: absolute; font-size: 2rem; bottom: 40%; opacity: 0; animation: floatUpEffect 1s ease-out; pointer-events: none; z-index: 15; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+    @keyframes floatUpEffect { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-70px) scale(1.5) rotate(15deg); opacity: 0; } }
     
     .status-board { width: 100%; background: #EFEBE9; padding: 12px 20px; border-radius: 16px; margin-bottom: 15px; }
     .exp-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
@@ -145,7 +150,8 @@
     <div class="action-buttons">
       <button id="start-quiz-btn" class="btn btn-primary btn-large">えいたんごクイズ (4もん)</button>
       <button id="mode-toggle-btn" class="btn btn-outline btn-large" style="margin-top:5px;">🔄 えいぶんモードにきりかえ</button>
-      <button id="reset-game-btn" class="btn btn-danger btn-large hidden" style="margin-top:5px;">イーブイにもどる🔄</button>
+      <!-- display:none で確実に隠す -->
+      <button id="reset-game-btn" class="btn btn-danger btn-large" style="margin-top:5px; display:none;">イーブイにもどる🔄</button>
     </div>
   </div>
 
@@ -170,7 +176,7 @@
 </div>
 
 <script>
-  // えいぶんモード用：24種類のポケモンデータ（ピンプクのID修正済:440）
+  // えいぶんモード用：24種類のポケモンデータ
 const pokemonFamilies = [
   { stage0: {id: 172, name: "ピチュー"}, stage1: {id: 25, name: "ピカチュウ"}, stage2: {id: 26, name: "ライチュウ"} },
   { stage0: {id: 92, name: "ゴース"}, stage1: {id: 93, name: "ゴースト"}, stage2: {id: 94, name: "ゲンガー"} },
@@ -371,7 +377,7 @@ const q4Data = [
 ];
   function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
-// 2つのモードの状態管理（expとカギ(keys)を分離）
+// 2つのモードの状態管理（exp と keys を完全分離）
 let isWordMode = true; 
 let wordState = { exp: 0, keys: 0, isEvolved: false, partnerId: 133, partnerName: "イーブイ", foods: [] };
 let grammarState = { exp: 0, keys: 0, stage: 0, familyIdx: -1, foods: [] };
@@ -411,23 +417,24 @@ function renderRoom() {
   const currentKeys = isWordMode ? wordState.keys : grammarState.keys;
   expText.innerText = currentExp; expBar.style.width = currentExp + "%";
   
-  // 最終進化後のみリセットボタン表示
+  // 最終進化後のみリセットボタン表示（強制上書き）
   if ((isWordMode && wordState.isEvolved) || (!isWordMode && grammarState.stage === 2)) {
-    resetGameBtn.classList.remove('hidden');
+    resetGameBtn.style.display = 'inline-flex';
   } else {
-    resetGameBtn.classList.add('hidden');
+    resetGameBtn.style.display = 'none';
   }
   
   const currentFoods = isWordMode ? wordState.foods : grammarState.foods;
   currentFoods.forEach((food, index) => {
-    const isUnlocked = currentKeys > index; // クリア回数(keys)がindexより大きければアンロック
+    // ゲットしたカギの数(keys) が indexより多ければアンロック
+    const isUnlocked = currentKeys > index; 
     const foodEl = document.createElement('div');
     if (food.isEaten) { foodEl.className = 'food-item eaten'; foodEl.innerText = food.emoji; }
     else if (!isUnlocked) { foodEl.className = 'food-item locked'; foodEl.innerText = food.emoji; }
     else { 
       foodEl.className = 'food-item'; foodEl.innerText = food.emoji; 
       if((isWordMode && !wordState.isEvolved) || (!isWordMode && grammarState.stage < 2)) {
-        foodEl.onclick = () => feedPartner(index, foodEl); 
+        foodEl.addEventListener('click', () => feedPartner(index, foodEl));
       }
     }
     foodListEl.appendChild(foodEl);
@@ -463,13 +470,12 @@ function interactPokemon() {
   }
 }
 
-// いろんなエフェクトを出す
+// 1回のタップで1種類のエフェクトが複数出るように変更
 function spawnEffects() {
-  for(let i=0; i<5; i++) {
-    const h = document.createElement('div'); 
-    h.innerText = effectEmojis[Math.floor(Math.random() * effectEmojis.length)]; 
-    h.className = 'effect-anim';
-    h.style.left = (30 + Math.random()*40) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
+  const emoji = effectEmojis[Math.floor(Math.random() * effectEmojis.length)];
+  for(let i=0; i<4; i++) {
+    const h = document.createElement('div'); h.innerText = emoji; h.className = 'effect-anim';
+    h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
     document.querySelector('.partner-stage').appendChild(h); setTimeout(() => h.remove(), 1000);
   }
 }
@@ -496,7 +502,7 @@ function feedPartner(index, element) {
     
     setTimeout(() => {
       msg.style.opacity = 0; msg.style.transform = "translate(-50%, 0)"; partnerImg.classList.remove("anim-chew");
-      // 経験値はごはんを食べた時だけ増える！
+      // ごはんを食べたときだけ経験値アップ！進化処理へ
       if (isWordMode) {
         wordState.exp = Math.min(100, wordState.exp + 25);
         if (wordState.exp === 100 && !wordState.isEvolved) {
@@ -524,16 +530,16 @@ function evolveAnim(targetPoke) {
   renderRoom();
 }
 
-document.getElementById('close-evolve-btn').onclick = () => document.getElementById('evolve-overlay').classList.remove('show');
+document.getElementById('close-evolve-btn').addEventListener('click', () => document.getElementById('evolve-overlay').classList.remove('show'));
 
 // リセットボタン（モードに合わせて動作変更）
-resetGameBtn.onclick = () => {
+resetGameBtn.addEventListener('click', () => {
   if (isWordMode) { initWordMode(); } else { initGrammarMode(); }
   renderRoom();
-};
+});
 
 // モード切り替え
-document.getElementById('mode-toggle-btn').onclick = () => {
+document.getElementById('mode-toggle-btn').addEventListener('click', () => {
   isWordMode = !isWordMode;
   if(isWordMode) {
     document.body.classList.remove('mode-grammar');
@@ -550,21 +556,21 @@ document.getElementById('mode-toggle-btn').onclick = () => {
     resetGameBtn.innerText = "あたらしいポケモンとあそぶ🔄";
   }
   renderRoom();
-};
+});
 
 // --- クイズロジック ---
 let currentQIndex = 0;
 let roundWordQuestions = [];
 
-document.getElementById('start-quiz-btn').onclick = () => { 
+document.getElementById('start-quiz-btn').addEventListener('click', () => { 
   roomView.classList.add('hidden'); quizView.classList.remove('hidden'); currentQIndex = 0; 
   if (isWordMode) roundWordQuestions = [...wordData].sort(() => 0.5 - Math.random()).slice(0, 4);
   showNextQuestion(); 
-};
+});
 
 function showNextQuestion() {
   if (currentQIndex >= 4) { 
-    // 4問正解したら「カギ(keys)」だけ増える。経験値は増えない。
+    // 4問正解したら「カギ(keys)」だけ増える。勝手に進化はしない。
     if (isWordMode) { wordState.keys++; } else { grammarState.keys++; }
     quizView.classList.add('hidden'); roomView.classList.remove('hidden'); renderRoom(); return; 
   }
@@ -594,11 +600,12 @@ function renderQ1(container) {
     </div>
     <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q1-opts"></div>
   `;
-  document.getElementById('q1-voice').onclick = () => speakCuteVoice(fullSentence);
+  document.getElementById('q1-voice').addEventListener('click', () => speakCuteVoice(fullSentence));
   const optsGrid = document.getElementById('q1-opts');
   [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = opt;
-    btn.onclick = () => checkAnswer(opt === q.correct, q.correct, fullSentence); optsGrid.appendChild(btn);
+    btn.addEventListener('click', () => checkAnswer(opt === q.correct, q.correct, fullSentence)); 
+    optsGrid.appendChild(btn);
   });
 }
 
@@ -611,11 +618,12 @@ function renderQ2(container) {
     </div>
     <div class="options-grid" id="q2-opts" style="margin-top:20px;"></div>
   `;
-  document.getElementById('q2-voice').onclick = () => speakCuteVoice(q.text);
+  document.getElementById('q2-voice').addEventListener('click', () => speakCuteVoice(q.text));
   const optsGrid = document.getElementById('q2-opts');
   [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span style="font-size:3rem;">${opt.emoji}</span> ${opt.text}`;
-    btn.onclick = () => checkAnswer(opt.emoji === q.correctEmoji, q.text, q.ja); optsGrid.appendChild(btn);
+    btn.addEventListener('click', () => checkAnswer(opt.emoji === q.correctEmoji, q.text, q.ja)); 
+    optsGrid.appendChild(btn);
   });
   setTimeout(() => speakCuteVoice(q.text), 500);
 }
@@ -633,23 +641,23 @@ function renderQ3(container) {
     <div id="sort-area" class="sort-area"></div><div id="sort-words" class="sort-words"></div>
     <button id="reset-sort-btn" class="btn btn-outline" style="margin-top:10px; padding:10px 20px; font-size:1.4rem;">やりなおす 🔄</button>
   `;
-  document.getElementById('q3-voice').onclick = () => speakCuteVoice(fullSentence);
+  document.getElementById('q3-voice').addEventListener('click', () => speakCuteVoice(fullSentence));
   const sortWordsBox = document.getElementById('sort-words'), sortArea = document.getElementById('sort-area'), resetSortBtn = document.getElementById('reset-sort-btn');
   const createSortButtons = () => {
     sortWordsBox.innerHTML = ''; sortArea.innerHTML = ''; currentAns = [];
     [...q.words].sort(() => 0.5 - Math.random()).forEach(word => {
       const btn = document.createElement('div'); btn.className = 'sort-word-btn'; btn.innerText = word;
-      btn.onclick = () => {
+      btn.addEventListener('click', () => {
         btn.classList.add('selected'); currentAns.push(word);
         const placedBtn = document.createElement('div'); placedBtn.className = 'sort-word-btn'; placedBtn.innerText = word;
-        placedBtn.onclick = () => { placedBtn.remove(); btn.classList.remove('selected'); currentAns = currentAns.filter(w => w !== word); };
+        placedBtn.addEventListener('click', () => { placedBtn.remove(); btn.classList.remove('selected'); currentAns = currentAns.filter(w => w !== word); });
         sortArea.appendChild(placedBtn);
         if (currentAns.length === q.words.length) { setTimeout(() => checkAnswer(currentAns.join(' ') === fullSentence, fullSentence, q.ja), 300); }
-      };
+      });
       sortWordsBox.appendChild(btn);
     });
   };
-  createSortButtons(); resetSortBtn.onclick = () => createSortButtons();
+  createSortButtons(); resetSortBtn.addEventListener('click', () => createSortButtons());
 }
 
 function speakWithPause(text1, text2) {
@@ -671,11 +679,12 @@ function renderQ4(container) {
     </div>
     <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q4-opts"></div>
   `;
-  document.getElementById('q4-voice').onclick = () => speakWithPause(questionText, q.correct);
+  document.getElementById('q4-voice').addEventListener('click', () => speakWithPause(questionText, q.correct));
   const optsGrid = document.getElementById('q4-opts');
   [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = opt;
-    btn.onclick = () => checkAnswer(opt === q.correct, q.correct, ''); optsGrid.appendChild(btn);
+    btn.addEventListener('click', () => checkAnswer(opt === q.correct, q.correct, '')); 
+    optsGrid.appendChild(btn);
   });
 }
 
@@ -686,14 +695,14 @@ function renderWordModeQuestion(container, qData, qType) {
   if (!(window.SpeechRecognition || window.webkitSpeechRecognition) && qType === 2) qType = 1;
   if (qType === 1) { 
     container.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; gap:10px;"><p style="font-size:1.4rem; font-weight:800; margin:0;">おとを きいて、えらぼう！</p><button class="voice-btn" id="word-voice-btn">🔊</button></div><div class="options-grid" id="word-opts" style="margin-top:20px;"></div>`;
-    document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
+    document.getElementById('word-voice-btn').addEventListener('click', () => speakCuteVoice(qData.en));
     createWordPictureOptions(qData, container.querySelector('#word-opts')); setTimeout(() => speakCuteVoice(qData.en), 500);
   } else if (qType === 2) { 
-    container.innerHTML = `<p style="font-size:1.2rem; font-weight:800;">マイクでおして、えいごで いってみよう！</p><div class="question-emoji">${qData.emoji}</div><div class="question-word">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">🎤</button><button class="voice-btn" id="word-voice-btn" style="margin-top:10px;">🔊</button><div style="margin-top:20px; padding-top:15px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとがOKをだす ⭕</button></div>`;
-    document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
-    document.getElementById('parent-ok-btn').onclick = () => checkAnswer(true, qData.en, qData.ja);
+    container.innerHTML = `<p style="font-size:1.2rem; font-weight:800;">マイクでおして、えいごで いってみよう！</p><div class="question-emoji" style="font-size:5rem;">${qData.emoji}</div><div class="question-word">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">🎤</button><button class="voice-btn" id="word-voice-btn" style="margin-top:10px;">🔊</button><div style="margin-top:20px; padding-top:15px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとがOKをだす ⭕</button></div>`;
+    document.getElementById('word-voice-btn').addEventListener('click', () => speakCuteVoice(qData.en));
+    document.getElementById('parent-ok-btn').addEventListener('click', () => checkAnswer(true, qData.en, qData.ja));
     const micBtn = document.getElementById('mic-btn');
-    micBtn.onclick = () => {
+    micBtn.addEventListener('click', () => {
       if (micBtn.classList.contains('listening')) return;
       try {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -704,14 +713,14 @@ function renderWordModeQuestion(container, qData, qType) {
         };
         recognition.onerror = () => micBtn.classList.remove('listening'); recognition.onspeechend = () => recognition.stop(); recognition.onnomatch = () => micBtn.classList.remove('listening'); recognition.start();
       } catch(e) { micBtn.classList.remove('listening'); }
-    };
+    });
     setTimeout(() => speakCuteVoice(qData.en), 500);
   } else if (qType === 3) { 
     container.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; gap:10px;"><p style="font-size:1.4rem; font-weight:800; margin:0;">えいごを よんで、えらぼう！</p><button class="voice-btn" id="word-voice-btn">🔊</button></div><div class="question-word" style="font-size:3rem; color:var(--primary-shadow); margin-top:10px;">${qData.en}</div><div class="options-grid" id="word-opts"></div>`;
-    document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
+    document.getElementById('word-voice-btn').addEventListener('click', () => speakCuteVoice(qData.en));
     createWordPictureOptions(qData, container.querySelector('#word-opts')); setTimeout(() => speakCuteVoice(qData.en), 500);
   } else { 
-    container.innerHTML = `<p style="font-size:1.4rem; font-weight:800;">にほんごを みて、えいごをえらぼう！</p><div class="question-emoji">${qData.emoji}</div><div class="question-word" style="font-size:2rem; margin:5px 0;">${qData.ja}</div><div class="options-grid" id="word-opts"></div>`;
+    container.innerHTML = `<p style="font-size:1.4rem; font-weight:800;">にほんごを みて、えいごをえらぼう！</p><div class="question-emoji" style="font-size:5rem; margin:5px 0;">${qData.emoji}</div><div class="question-word" style="font-size:2rem; margin:5px 0;">${qData.ja}</div><div class="options-grid" id="word-opts"></div>`;
     createWordTextOptions(qData, container.querySelector('#word-opts'));
   }
 }
@@ -720,14 +729,16 @@ function createWordPictureOptions(correctData, container) {
   const options = [correctData, ...[...wordData].filter(w => w.en !== correctData.en).sort(() => 0.5 - Math.random()).slice(0, 2)].sort(() => 0.5 - Math.random());
   options.forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span style="font-size:3.5rem;">${opt.emoji}</span> <span style="font-size:1.6rem;">${opt.ja}</span>`;
-    btn.onclick = () => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja); container.appendChild(btn);
+    btn.addEventListener('click', () => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja)); 
+    container.appendChild(btn);
   });
 }
 function createWordTextOptions(correctData, container) {
   const options = [correctData, ...[...wordData].filter(w => w.en !== correctData.en).sort(() => 0.5 - Math.random()).slice(0, 2)].sort(() => 0.5 - Math.random());
   options.forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span style="font-size:2rem; font-weight:900;">${opt.en}</span>`;
-    btn.onclick = () => { speakCuteVoice(opt.en); setTimeout(() => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja), 500); }; container.appendChild(btn);
+    btn.addEventListener('click', () => { speakCuteVoice(opt.en); setTimeout(() => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja), 500); }); 
+    container.appendChild(btn);
   });
 }
 
