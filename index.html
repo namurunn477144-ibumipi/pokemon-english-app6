@@ -6,14 +6,20 @@
   <title>えいごクイズ - 英検5級への道</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* 黄緑基調のカラーパレットに変更！ */
     :root {
-      --primary: #FF9800; --primary-shadow: #E65100;
-      --secondary: #03A9F4; --secondary-shadow: #0277BD;
-      --bg-color: #FFF3E0; --card-bg: #FFFFFF;
-      --text-main: #3E2723; --correct: #4CAF50; --incorrect: #F44336;
+      --primary: #8BC34A; /* メインの黄緑 */
+      --primary-shadow: #689F38;
+      --secondary: #FFB300; /* アクセントのオレンジイエロー */
+      --secondary-shadow: #FF8F00;
+      --bg-color: #F1F8E9; /* 背景のうすい緑 */
+      --card-bg: #FFFFFF;
+      --text-main: #3E2723;
+      --correct: #4CAF50;
+      --incorrect: #F44336;
     }
     * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; padding: 0; background-color: var(--bg-color); background-image: radial-gradient(#FFE0B2 2px, transparent 2px); background-size: 20px 20px; color: var(--text-main); overflow-x: hidden; touch-action: manipulation; }
+    body { margin: 0; padding: 0; background-color: var(--bg-color); background-image: radial-gradient(#DCEDC8 2px, transparent 2px); background-size: 20px 20px; color: var(--text-main); overflow-x: hidden; touch-action: manipulation; }
     
     #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
     .view { display: flex; flex-direction: column; align-items: center; padding: 15px; min-height: 100vh; transition: opacity 0.3s ease; }
@@ -39,10 +45,10 @@
     .exp-label { font-size: 1.1rem; font-weight: 800; }
     .exp-value { font-size: 1.4rem; font-weight: 900; color: var(--primary-shadow); }
     .exp-bar-bg { background-color: #D7CCC8; border-radius: 15px; height: 24px; overflow: hidden; border: 3px solid #FFF; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-    .exp-bar-fill { background: linear-gradient(90deg, #FFB74D, #FF9800); height: 100%; width: 0%; border-radius: 10px; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .exp-bar-fill { background: linear-gradient(90deg, #AED581, #8BC34A); height: 100%; width: 0%; border-radius: 10px; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     
     .food-section { width: 100%; background: var(--card-bg); border-radius: 20px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
-    .food-header h3 { margin: 0 0 5px 0; font-size: 1.2rem; text-align: center; }
+    .food-header h3 { margin: 0 0 5px 0; font-size: 1.2rem; text-align: center; color: var(--primary-shadow); }
     .food-header p { margin: 0; font-size: 0.85rem; color: #795548; text-align: center; }
     .food-list { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
     
@@ -56,28 +62,30 @@
     .action-buttons { width: 100%; display: flex; flex-direction: column; gap: 10px; }
     .btn { border: none; border-radius: 20px; font-weight: 900; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; text-align: center; outline: none; display: inline-flex; justify-content: center; align-items: center; }
     .btn-large { width: 100%; padding: 16px; font-size: 1.4rem; }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 0 var(--primary-shadow); }
-    .btn-primary:active { transform: translateY(8px); box-shadow: 0 0 0 var(--primary-shadow); }
+    .btn-primary { background: var(--secondary); color: white; box-shadow: 0 8px 0 var(--secondary-shadow); }
+    .btn-primary:active { transform: translateY(8px); box-shadow: 0 0 0 var(--secondary-shadow); }
+    .btn-danger { background: #4CAF50; color: white; box-shadow: 0 8px 0 #388E3C; } /* 色を緑系に合わせました */
+    .btn-danger:active { transform: translateY(8px); box-shadow: 0 0 0 #388E3C; }
     
     .quiz-header-bar { margin-bottom: 15px; }
-    .badge { background: var(--secondary); color: #FFF; padding: 6px 16px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 0 var(--secondary-shadow); }
+    .badge { background: var(--primary); color: #FFF; padding: 6px 16px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 0 var(--primary-shadow); }
     .quiz-card { background: var(--card-bg); width: 100%; padding: 24px; border-radius: 24px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border: 4px solid #FFF; text-align: center; }
     .question-word { font-size: 2.2rem; font-weight: 900; color: #333; margin: 15px 0; line-height: 1.3; }
     .question-ja { font-size: 1.4rem; color: #666; margin-bottom: 20px; }
     
     .options-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-    .option-btn { background: #FFF; border: 4px solid var(--secondary); border-radius: 16px; padding: 12px; font-size: 1.4rem; font-weight: 800; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 15px; box-shadow: 0 6px 0 var(--secondary); cursor: pointer; transition: 0.1s; }
-    .option-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+    .option-btn { background: #FFF; border: 4px solid var(--primary); border-radius: 16px; padding: 12px; font-size: 1.4rem; font-weight: 800; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 15px; box-shadow: 0 6px 0 var(--primary); cursor: pointer; transition: 0.1s; }
+    .option-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--primary); }
     
     /* 並べ替え問題用CSS */
     .sort-area { min-height: 60px; background: #F5F5F5; border: 3px dashed #BDBDBD; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
     .sort-words { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-    .sort-word-btn { background: #FFF; border: 3px solid var(--primary); border-radius: 12px; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; color: var(--text-main); box-shadow: 0 4px 0 var(--primary-shadow); cursor: pointer; }
-    .sort-word-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-shadow); }
+    .sort-word-btn { background: #FFF; border: 3px solid var(--secondary); border-radius: 12px; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; color: var(--text-main); box-shadow: 0 4px 0 var(--secondary-shadow); cursor: pointer; }
+    .sort-word-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--secondary-shadow); }
     .sort-word-btn.selected { visibility: hidden; }
     
-    .voice-btn { background: #4CAF50; box-shadow: 0 6px 0 #2E7D32; border-radius: 50%; width: 60px; height: 60px; font-size: 1.8rem; border: none; color: white; cursor: pointer; margin-bottom: 10px; display:inline-flex; justify-content:center; align-items:center;}
-    .voice-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2E7D32; }
+    .voice-btn { background: var(--secondary); box-shadow: 0 4px 0 var(--secondary-shadow); border-radius: 50%; border: none; color: white; cursor: pointer; display:inline-flex; justify-content:center; align-items:center; transition: 0.1s;}
+    .voice-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--secondary-shadow); }
     
     .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.95); z-index: 100; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
     .overlay.show { opacity: 1; pointer-events: auto; }
@@ -88,11 +96,11 @@
     
     .evo-rings { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; z-index: -1; overflow: hidden; }
     .evo-ring { position: absolute; width: 0; height: 0; border-radius: 50%; border: 15px solid #FFC107; animation: ringExpand 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite; box-shadow: 0 0 30px #FF9800, inset 0 0 30px #FF9800; opacity: 0; }
-    .evo-ring:nth-child(2) { animation-delay: 0.6s; border-color: #03A9F4; box-shadow: 0 0 30px #00BCD4, inset 0 0 30px #00BCD4; }
-    .evo-ring:nth-child(3) { animation-delay: 1.2s; border-color: #E91E63; box-shadow: 0 0 30px #E91E63, inset 0 0 30px #E91E63; }
+    .evo-ring:nth-child(2) { animation-delay: 0.6s; border-color: #8BC34A; box-shadow: 0 0 30px #8BC34A, inset 0 0 30px #8BC34A; }
+    .evo-ring:nth-child(3) { animation-delay: 1.2s; border-color: #03A9F4; box-shadow: 0 0 30px #03A9F4, inset 0 0 30px #03A9F4; }
     @keyframes ringExpand { 0% { width: 0; height: 0; opacity: 1; border-width: 20px; } 100% { width: 150vw; height: 150vw; opacity: 0; border-width: 2px; } }
     #evolve-image { width: 220px; height: 220px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); animation: pulseGlow 1.5s infinite alternate; margin-bottom: 20px;}
-    @keyframes pulseGlow { 0% { transform: scale(1); filter: drop-shadow(0 0 10px #FF9800); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFEB3B); } }
+    @keyframes pulseGlow { 0% { transform: scale(1); filter: drop-shadow(0 0 10px var(--primary)); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 30px var(--secondary)); } }
     .evolve-text { font-size: 2.2rem; color: var(--primary-shadow); font-weight: 900; margin-bottom: 30px; text-align: center; text-shadow: 2px 2px #FFF, 0 0 10px #FFF59D;}
   </style>
 </head>
@@ -133,7 +141,7 @@
   </div>
 </div>
 
-<div id="evolve-overlay" class="overlay" style="background: rgba(255,255,255,0.85);">
+<div id="evolve-overlay" class="overlay" style="background: rgba(255,255,255,0.9);">
   <div class="evo-rings"><div class="evo-ring"></div><div class="evo-ring"></div><div class="evo-ring"></div></div>
   <img id="evolve-image" src="" alt="しんか！">
   <h2 id="evolve-text" class="evolve-text">おめでとう！<br>しんかした！</h2>
@@ -141,7 +149,7 @@
 </div>
 
 <script>
-  // 2段階進化するポケモン10種
+  // ポケモンとごはんデータ
 const pokemonFamilies = [
   { stage0: {id: 172, name: "ピチュー"}, stage1: {id: 25, name: "ピカチュウ"}, stage2: {id: 26, name: "ライチュウ"} },
   { stage0: {id: 92, name: "ゴース"}, stage1: {id: 93, name: "ゴースト"}, stage2: {id: 94, name: "ゲンガー"} },
@@ -161,40 +169,140 @@ const allFoods = [
   { name: "パンケーキ", emoji: "🥞" }, { name: "ステーキ", emoji: "🥩" }, { name: "サンドイッチ", emoji: "🥪" }, { name: "たこやき", emoji: "🐙" }
 ];
 
-// Q1: 穴あき問題データ（文法・単語）
+// Q1: 穴あき問題（30問）
 const q1Data = [
   { text: "I ( ___ ) an apple.", ja: "わたしは りんごを たべます。", correct: "eat", options: ["eat", "play", "read", "swim"] },
   { text: "The cat is ( ___ ) the desk.", ja: "ねこは つくえの したに います。", correct: "under", options: ["in", "on", "under", "at"] },
   { text: "( ___ ) is your birthday?", ja: "あなたの たんじょうびは いつですか？", correct: "When", options: ["What", "When", "Who", "Where"] },
   { text: "This is ( ___ ) book.", ja: "これは わたしの ほんです。", correct: "my", options: ["I", "my", "me", "mine"] },
-  { text: "I like ( ___ ).", ja: "わたしは いぬが すきです。", correct: "dogs", options: ["dogs", "cats", "birds", "fish"] }
+  { text: "I like ( ___ ).", ja: "わたしは いぬが すきです。", correct: "dogs", options: ["dogs", "cats", "birds", "fish"] },
+  { text: "I ( ___ ) a student.", ja: "わたしは がくせいです。", correct: "am", options: ["am", "is", "are", "do"] },
+  { text: "He ( ___ ) a teacher.", ja: "かれは せんせいです。", correct: "is", options: ["am", "is", "are", "do"] },
+  { text: "You ( ___ ) my friend.", ja: "あなたは わたしの ともだちです。", correct: "are", options: ["am", "is", "are", "do"] },
+  { text: "I ( ___ ) a pen.", ja: "わたしは ペンを もっています。", correct: "have", options: ["have", "has", "do", "am"] },
+  { text: "Let's ( ___ ) soccer.", ja: "サッカーを しましょう。", correct: "play", options: ["play", "run", "eat", "make"] },
+  { text: "The bird is ( ___ ) the tree.", ja: "とりは きの なかに います。", correct: "in", options: ["in", "on", "under", "at"] },
+  { text: "The book is ( ___ ) the desk.", ja: "ほんは つくえの うえに あります。", correct: "on", options: ["in", "on", "under", "at"] },
+  { text: "I get up ( ___ ) seven.", ja: "わたしは 7じに おきます。", correct: "at", options: ["in", "on", "under", "at"] },
+  { text: "( ___ ) is that boy?", ja: "あの おとこのこは だれですか？", correct: "Who", options: ["What", "When", "Who", "Where"] },
+  { text: "( ___ ) is my bag?", ja: "わたしの かばんは どこですか？", correct: "Where", options: ["What", "When", "Who", "Where"] },
+  { text: "( ___ ) is this?", ja: "これは なんですか？", correct: "What", options: ["What", "When", "Who", "Where"] },
+  { text: "( ___ ) am Ken.", ja: "わたしは ケンです。", correct: "I", options: ["I", "You", "He", "She"] },
+  { text: "( ___ ) are a good boy.", ja: "あなたは いいこですね。", correct: "You", options: ["I", "You", "He", "She"] },
+  { text: "( ___ ) is my brother.", ja: "かれは わたしの あにです。", correct: "He", options: ["I", "You", "He", "She"] },
+  { text: "( ___ ) is my sister.", ja: "かのじょは わたしの あねです。", correct: "She", options: ["I", "You", "He", "She"] },
+  { text: "( ___ ) are friends.", ja: "わたしたちは ともだちです。", correct: "We", options: ["I", "We", "He", "They"] },
+  { text: "( ___ ) are running.", ja: "かれらは はしっています。", correct: "They", options: ["I", "We", "He", "They"] },
+  { text: "That is ( ___ ) dog.", ja: "あれは かれの いぬです。", correct: "his", options: ["my", "your", "his", "her"] },
+  { text: "This is ( ___ ) pen.", ja: "これは かのじょの ペンです。", correct: "her", options: ["my", "your", "his", "her"] },
+  { text: "I ( ___ ) swim.", ja: "わたしは およげます。", correct: "can", options: ["can", "am", "do", "have"] },
+  { text: "I ( ___ ) apples.", ja: "わたしは りんごが すきです。", correct: "like", options: ["like", "want", "look", "see"] },
+  { text: "I ( ___ ) a book.", ja: "わたしは ほんが ほしいです。", correct: "want", options: ["like", "want", "look", "see"] },
+  { text: "I ( ___ ) to school.", ja: "わたしは がっこうに いきます。", correct: "go", options: ["go", "come", "run", "walk"] },
+  { text: "I ( ___ ) a book.", ja: "わたしは ほんを よみます。", correct: "read", options: ["read", "write", "speak", "listen"] },
+  { text: "I ( ___ ) a letter.", ja: "わたしは てがみを かきます。", correct: "write", options: ["read", "write", "speak", "listen"] }
 ];
 
-// Q2: リスニング・イラスト一致データ
+// Q2: リスニング・イラスト一致（30問）
 const q2Data = [
   { text: "It is sunny.", ja: "はれ", correctEmoji: "☀️", options: [{emoji:"☀️", text:"はれ"}, {emoji:"🌧️", text:"あめ"}, {emoji:"☁️", text:"くもり"}] },
   { text: "I have a book.", ja: "ほん", correctEmoji: "📖", options: [{emoji:"📖", text:"ほん"}, {emoji:"🖊️", text:"ペン"}, {emoji:"🎒", text:"かばん"}] },
   { text: "She is a doctor.", ja: "おいしゃさん", correctEmoji: "🧑‍⚕️", options: [{emoji:"🧑‍⚕️", text:"いしゃ"}, {emoji:"🧑‍🏫", text:"せんせい"}, {emoji:"👮", text:"けいさつ"}] },
   { text: "I play baseball.", ja: "やきゅう", correctEmoji: "⚾", options: [{emoji:"⚾", text:"やきゅう"}, {emoji:"⚽", text:"サッカー"}, {emoji:"🎾", text:"テニス"}] },
-  { text: "Let's go to the park.", ja: "こうえん", correctEmoji: "⛲", options: [{emoji:"⛲", text:"こうえん"}, {emoji:"🏫", text:"がっこう"}, {emoji:"🏥", text:"びょういん"}] }
+  { text: "Let's go to the park.", ja: "こうえん", correctEmoji: "⛲", options: [{emoji:"⛲", text:"こうえん"}, {emoji:"🏫", text:"がっこう"}, {emoji:"🏥", text:"びょういん"}] },
+  { text: "I like dogs.", ja: "いぬ", correctEmoji: "🐶", options: [{emoji:"🐶", text:"いぬ"}, {emoji:"🐱", text:"ねこ"}, {emoji:"🐰", text:"うさぎ"}] },
+  { text: "This is a bird.", ja: "とり", correctEmoji: "🐦", options: [{emoji:"🐦", text:"とり"}, {emoji:"🐟", text:"さかな"}, {emoji:"🐢", text:"かめ"}] },
+  { text: "I eat an apple.", ja: "りんご", correctEmoji: "🍎", options: [{emoji:"🍎", text:"りんご"}, {emoji:"🍌", text:"バナナ"}, {emoji:"🍇", text:"ぶどう"}] },
+  { text: "It is red.", ja: "あか", correctEmoji: "🔴", options: [{emoji:"🔴", text:"あか"}, {emoji:"🔵", text:"あお"}, {emoji:"🟡", text:"きいろ"}] },
+  { text: "I run fast.", ja: "はしる", correctEmoji: "🏃", options: [{emoji:"🏃", text:"はしる"}, {emoji:"🚶", text:"あるく"}, {emoji:"🏊", text:"およぐ"}] },
+  { text: "Look at the car.", ja: "くるま", correctEmoji: "🚗", options: [{emoji:"🚗", text:"くるま"}, {emoji:"🚌", text:"バス"}, {emoji:"🚃", text:"でんしゃ"}] },
+  { text: "I see a mountain.", ja: "やま", correctEmoji: "⛰️", options: [{emoji:"⛰️", text:"やま"}, {emoji:"🌊", text:"うみ"}, {emoji:"🏞️", text:"かわ"}] },
+  { text: "I am happy.", ja: "うれしい", correctEmoji: "😊", options: [{emoji:"😊", text:"うれしい"}, {emoji:"😢", text:"かなしい"}, {emoji:"😠", text:"おこる"}] },
+  { text: "It is spring.", ja: "はる", correctEmoji: "🌸", options: [{emoji:"🌸", text:"はる"}, {emoji:"🌻", text:"なつ"}, {emoji:"⛄", text:"ふゆ"}] },
+  { text: "I have one apple.", ja: "いち", correctEmoji: "1️⃣", options: [{emoji:"1️⃣", text:"いち"}, {emoji:"2️⃣", text:"に"}, {emoji:"3️⃣", text:"さん"}] },
+  { text: "It is big.", ja: "おおきい", correctEmoji: "🐘", options: [{emoji:"🐘", text:"おおきい"}, {emoji:"🐭", text:"ちいさい"}, {emoji:"🦒", text:"たかい"}] },
+  { text: "Today is Monday.", ja: "げつようび", correctEmoji: "📅", options: [{emoji:"📅", text:"げつようび"}, {emoji:"☀️", text:"きょう"}, {emoji:"🔜", text:"あした"}] },
+  { text: "I eat meat.", ja: "おにく", correctEmoji: "🍖", options: [{emoji:"🍖", text:"おにく"}, {emoji:"🐟", text:"さかな"}, {emoji:"🥚", text:"たまご"}] },
+  { text: "I drink water.", ja: "みず", correctEmoji: "💧", options: [{emoji:"💧", text:"みず"}, {emoji:"🥛", text:"ぎゅうにゅう"}, {emoji:"🧃", text:"ジュース"}] },
+  { text: "I have a hat.", ja: "ぼうし", correctEmoji: "🧢", options: [{emoji:"🧢", text:"ぼうし"}, {emoji:"👕", text:"シャツ"}, {emoji:"👟", text:"くつ"}] },
+  { text: "Look at the stars.", ja: "ほし", correctEmoji: "⭐", options: [{emoji:"⭐", text:"ほし"}, {emoji:"🌙", text:"つき"}, {emoji:"☀️", text:"たいよう"}] },
+  { text: "He is my father.", ja: "おとうさん", correctEmoji: "👨", options: [{emoji:"👨", text:"おとうさん"}, {emoji:"👩", text:"おかあさん"}, {emoji:"👦", text:"あに"}] },
+  { text: "Touch your nose.", ja: "はな", correctEmoji: "👃", options: [{emoji:"👃", text:"はな"}, {emoji:"👂", text:"みみ"}, {emoji:"👄", text:"くち"}] },
+  { text: "I wash my hands.", ja: "て", correctEmoji: "🖐️", options: [{emoji:"🖐️", text:"て"}, {emoji:"🦶", text:"あし"}, {emoji:"👤", text:"あたま"}] },
+  { text: "It is rainy.", ja: "あめ", correctEmoji: "🌧️", options: [{emoji:"🌧️", text:"あめ"}, {emoji:"☀️", text:"はれ"}, {emoji:"⛄", text:"ゆき"}] },
+  { text: "I see a flower.", ja: "はな", correctEmoji: "🌷", options: [{emoji:"🌷", text:"はな"}, {emoji:"🌲", text:"き"}, {emoji:"🍀", text:"はっぱ"}] },
+  { text: "I am sleepy.", ja: "ねむい", correctEmoji: "🥱", options: [{emoji:"🥱", text:"ねむい"}, {emoji:"🤤", text:"おなかすいた"}, {emoji:"😊", text:"うれしい"}] },
+  { text: "I go to the store.", ja: "おみせ", correctEmoji: "🏪", options: [{emoji:"🏪", text:"おみせ"}, {emoji:"🏥", text:"びょういん"}, {emoji:"🏦", text:"ぎんこう"}] },
+  { text: "I like strawberries.", ja: "いちご", correctEmoji: "🍓", options: [{emoji:"🍓", text:"いちご"}, {emoji:"🍑", text:"もも"}, {emoji:"🍉", text:"すいか"}] },
+  { text: "Play the piano.", ja: "ピアノ", correctEmoji: "🎹", options: [{emoji:"🎹", text:"ピアノ"}, {emoji:"🎸", text:"ギター"}, {emoji:"🥁", text:"ドラム"}] }
 ];
 
-// Q3: 並べ替え問題データ（配列順が正解）
+// Q3: 並べ替え問題（30問）
 const q3Data = [
   { ja: "わたしは テニスを します。", words: ["I", "play", "tennis."] },
   { ja: "あなたは だれですか？", words: ["Who", "are", "you?"] },
   { ja: "これは わたしの ペンです。", words: ["This", "is", "my", "pen."] },
   { ja: "サッカーを しましょう！", words: ["Let's", "play", "soccer!"] },
-  { ja: "わたしは いぬが すきです。", words: ["I", "like", "dogs."] }
+  { ja: "わたしは いぬが すきです。", words: ["I", "like", "dogs."] },
+  { ja: "わたしは がくせいです。", words: ["I", "am", "a", "student."] },
+  { ja: "かれは わたしの あにです。", words: ["He", "is", "my", "brother."] },
+  { ja: "りんごは すきですか？", words: ["Do", "you", "like", "apples?"] },
+  { ja: "はい、すきです。", words: ["Yes,", "I", "do."] },
+  { ja: "およぐことは できますか？", words: ["Can", "you", "swim?"] },
+  { ja: "わたしは ピアノが ひけます。", words: ["I", "can", "play", "the", "piano."] },
+  { ja: "これは なんですか？", words: ["What", "is", "this?"] },
+  { ja: "それは いぬです。", words: ["It", "is", "a", "dog."] },
+  { ja: "わたしの ほんは どこですか？", words: ["Where", "is", "my", "book?"] },
+  { ja: "つくえの うえに あります。", words: ["It", "is", "on", "the", "desk."] },
+  { ja: "いま なんじですか？", words: ["What", "time", "is", "it?"] },
+  { ja: "わたしは ほんを もっています。", words: ["I", "have", "a", "book."] },
+  { ja: "わたしは りんごが ほしいです。", words: ["I", "want", "an", "apple."] },
+  { ja: "あそこに いきましょう。", words: ["Let's", "go", "there."] },
+  { ja: "かのじょは いい せんせいです。", words: ["She", "is", "a", "good", "teacher."] },
+  { ja: "あれは あなたの かばんですか？", words: ["Is", "that", "your", "bag?"] },
+  { ja: "いいえ、ちがいます。", words: ["No,", "it", "is", "not."] },
+  { ja: "わたしは ネコが すきではありません。", words: ["I", "do", "not", "like", "cats."] },
+  { ja: "これを みて。", words: ["Look", "at", "this."] },
+  { ja: "わたしは 7じに おきます。", words: ["I", "get", "up", "at", "seven."] },
+  { ja: "あなたの なまえは なんですか？", words: ["What", "is", "your", "name?"] },
+  { ja: "たんじょうびは いつですか？", words: ["When", "is", "your", "birthday?"] },
+  { ja: "これを ください。", words: ["I", "will", "take", "this."] },
+  { ja: "わたしは とても うれしいです。", words: ["I", "am", "very", "happy."] },
+  { ja: "かれらは わたしの ともだちです。", words: ["They", "are", "my", "friends."] }
 ];
 
-// Q4: 会話の返答問題データ
+// Q4: 会話の返答問題（30問）
 const q4Data = [
   { text: "A: How are you?", ja: "ちょうしは どう？", correct: "I'm fine.", options: ["I'm fine.", "I'm a boy.", "Yes, I am.", "Good morning."] },
   { text: "A: Thank you.", ja: "ありがとう。", correct: "You're welcome.", options: ["You're welcome.", "I'm sorry.", "Please.", "Good job!"] },
   { text: "A: Let's play soccer!", ja: "サッカーしよう！", correct: "Yes, let's.", options: ["Yes, let's.", "No, it isn't.", "I am sorry.", "Thank you."] },
   { text: "A: What time is it?", ja: "いま なんじ？", correct: "It's three.", options: ["It's three.", "It's a clock.", "Yes, it is.", "It's sunny."] },
-  { text: "A: Can you swim?", ja: "およげる？", correct: "Yes, I can.", options: ["Yes, I can.", "Yes, it is.", "No, I am not.", "I like swimming."] }
+  { text: "A: Can you swim?", ja: "およげる？", correct: "Yes, I can.", options: ["Yes, I can.", "Yes, it is.", "No, I am not.", "I like swimming."] },
+  { text: "A: Good morning.", ja: "おはよう。", correct: "Good morning.", options: ["Good morning.", "Good night.", "Goodbye.", "Thank you."] },
+  { text: "A: Nice to meet you.", ja: "はじめまして。", correct: "Nice to meet you, too.", options: ["Nice to meet you, too.", "See you.", "I am fine.", "Yes, I do."] },
+  { text: "A: What is your name?", ja: "なまえは なに？", correct: "I am Tom.", options: ["I am Tom.", "It is a pen.", "Yes, I am.", "I am fine."] },
+  { text: "A: How old are you?", ja: "なんさい？", correct: "I am ten.", options: ["I am ten.", "I am fine.", "It is ten.", "Yes, I do."] },
+  { text: "A: Do you like tennis?", ja: "テニスは すき？", correct: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, I can.", "No, it is not."] },
+  { text: "A: Are you a student?", ja: "あなたは がくせいですか？", correct: "Yes, I am.", options: ["Yes, I am.", "Yes, I do.", "Yes, I can.", "No, I don't."] },
+  { text: "A: Whose pen is this?", ja: "これは だれのペン？", correct: "It is mine.", options: ["It is mine.", "It is a pen.", "Yes, it is.", "I have a pen."] },
+  { text: "A: Where do you live?", ja: "どこに すんでるの？", correct: "In Tokyo.", options: ["In Tokyo.", "On Sunday.", "Yes, I do.", "I am fine."] },
+  { text: "A: When is your birthday?", ja: "たんじょうびは いつ？", correct: "In May.", options: ["In May.", "In Tokyo.", "I am ten.", "Yes, it is."] },
+  { text: "A: Here you are.", ja: "はい、どうぞ。", correct: "Thank you.", options: ["Thank you.", "You're welcome.", "Yes, I am.", "I am fine."] },
+  { text: "A: I am sorry.", ja: "ごめんなさい。", correct: "That's OK.", options: ["That's OK.", "You're welcome.", "Yes, please.", "Here you are."] },
+  { text: "A: Is this your bag?", ja: "これは あなたのかばん？", correct: "Yes, it is.", options: ["Yes, it is.", "Yes, I am.", "Yes, I do.", "Yes, I can."] },
+  { text: "A: See you tomorrow.", ja: "またあした。", correct: "See you.", options: ["See you.", "Hello.", "Nice to meet you.", "I am fine."] },
+  { text: "A: Have a nice day.", ja: "よい いちにちを。", correct: "You, too.", options: ["You, too.", "I am fine.", "Yes, I am.", "Thank you."] },
+  { text: "A: Happy birthday!", ja: "たんじょうび おめでとう！", correct: "Thank you.", options: ["Thank you.", "Happy birthday!", "You're welcome.", "Yes, I do."] },
+  { text: "A: What is this?", ja: "これは なに？", correct: "It is a book.", options: ["It is a book.", "Yes, it is.", "I like books.", "I am a book."] },
+  { text: "A: Where is my dog?", ja: "わたしのいぬは どこ？", correct: "Under the desk.", options: ["Under the desk.", "On Monday.", "Yes, it is.", "I like dogs."] },
+  { text: "A: How is the weather?", ja: "てんきは どう？", correct: "It is sunny.", options: ["It is sunny.", "It is a dog.", "Yes, it is.", "I am fine."] },
+  { text: "A: What day is it today?", ja: "きょうは なんようび？", correct: "It is Sunday.", options: ["It is Sunday.", "It is sunny.", "It is May.", "I am fine."] },
+  { text: "A: Do you have a pen?", ja: "ペンを もっていますか？", correct: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, it is.", "Yes, I can."] },
+  { text: "A: Who is that boy?", ja: "あの おとこのこは だれ？", correct: "He is Ken.", options: ["He is Ken.", "She is Yumi.", "It is a boy.", "Yes, he is."] },
+  { text: "A: Are they your friends?", ja: "かれらは ともだち？", correct: "Yes, they are.", options: ["Yes, they are.", "Yes, I am.", "Yes, he is.", "Yes, we do."] },
+  { text: "A: Does he like apples?", ja: "かれは りんごがすき？", correct: "Yes, he does.", options: ["Yes, he does.", "Yes, he is.", "Yes, I do.", "Yes, it is."] },
+  { text: "A: Can I help you?", ja: "いらっしゃいませ。", correct: "Yes, please.", options: ["Yes, please.", "You're welcome.", "That's OK.", "I am fine."] },
+  { text: "A: This is for you.", ja: "これ、あなたに。", correct: "Thank you.", options: ["Thank you.", "You're welcome.", "Yes, I am.", "That's OK."] }
 ];
   function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
@@ -210,7 +318,6 @@ const foodListEl = document.getElementById('food-list'), expText = document.getE
 const partnerImg = document.getElementById('partner-image'), partnerName = document.getElementById('partner-name');
 const evolveImg = document.getElementById('evolve-image');
 
-// 新しいポケモンをランダムに選ぶ
 function initNewGame() {
   currentFamily = pokemonFamilies[Math.floor(Math.random() * pokemonFamilies.length)];
   totalExp = 0; evolutionStage = 0;
@@ -227,7 +334,7 @@ function renderRoom() {
   expText.innerText = totalExp; expBar.style.width = totalExp + "%";
   
   activeFoods.forEach((food, index) => {
-    const isUnlocked = totalExp >= food.unlockExp; // 25, 50, 75, 100ごとにアンロック
+    const isUnlocked = totalExp >= food.unlockExp;
     const foodEl = document.createElement('div');
     if (food.isEaten) { foodEl.className = 'food-item eaten'; foodEl.innerText = food.emoji; }
     else if (!isUnlocked) { foodEl.className = 'food-item locked'; foodEl.innerText = food.emoji; }
@@ -253,7 +360,6 @@ function feedPartner(index, element) {
     flying.remove();
     const msg = document.getElementById('eating-msg'); msg.style.opacity = 1; msg.style.transform = "translate(-50%, -20px)"; partnerImg.classList.add("anim-chew");
     
-    // ハート演出
     for(let i=0; i<4; i++) {
       const h = document.createElement('div'); h.innerText = '💖'; h.className = 'heart-anim';
       h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
@@ -262,7 +368,6 @@ function feedPartner(index, element) {
     
     setTimeout(() => {
       msg.style.opacity = 0; msg.style.transform = "translate(-50%, 0)"; partnerImg.classList.remove("anim-chew");
-      // 50%と100%で進化チェック
       if (totalExp === 50 && evolutionStage === 0) { evolutionStage = 1; evolveAnim(currentFamily.stage1); }
       else if (totalExp === 100 && evolutionStage === 1) { evolutionStage = 2; evolveAnim(currentFamily.stage2); }
       else { renderRoom(); }
@@ -278,7 +383,9 @@ function evolveAnim(targetPoke) {
 }
 
 document.getElementById('close-evolve-btn').onclick = () => document.getElementById('evolve-overlay').classList.remove('show');
-document.getElementById('reset-game-btn').onclick = () => { if(confirm("あたらしいポケモンをよぶ？")) initNewGame(); };
+
+// ポップアップなしですぐに入れ替える
+document.getElementById('reset-game-btn').onclick = () => initNewGame();
 
 // クイズロジック
 let currentQIndex = 0;
@@ -286,57 +393,87 @@ document.getElementById('start-quiz-btn').onclick = () => { roomView.classList.a
 
 function showNextQuestion() {
   if (currentQIndex >= 4) { 
-    totalExp += 25; // 4問クリアで25%UP
-    if(totalExp > 100) totalExp = 100;
+    totalExp += 25; if(totalExp > 100) totalExp = 100;
     quizView.classList.add('hidden'); roomView.classList.remove('hidden'); renderRoom(); return; 
   }
   document.getElementById('quiz-progress-text').innerText = `だい ${currentQIndex + 1} もん! (英検5級)`;
   const contentEl = document.getElementById('quiz-content'); contentEl.innerHTML = "";
   
-  if (currentQIndex === 0) { renderQ1(contentEl); }      // 穴あき
-  else if (currentQIndex === 1) { renderQ2(contentEl); } // リスニング
-  else if (currentQIndex === 2) { renderQ3(contentEl); } // 並べ替え
-  else if (currentQIndex === 3) { renderQ4(contentEl); } // 会話
+  if (currentQIndex === 0) { renderQ1(contentEl); }      
+  else if (currentQIndex === 1) { renderQ2(contentEl); } 
+  else if (currentQIndex === 2) { renderQ3(contentEl); } 
+  else if (currentQIndex === 3) { renderQ4(contentEl); } 
 }
 
-// 1問目：穴あき問題
+// 1問目：穴あき
 function renderQ1(container) {
   const q = q1Data[Math.floor(Math.random() * q1Data.length)];
-  let html = `<p style="font-size:1.2rem; font-weight:800;">( __ ) にはいる えいごは？</p>
-              <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid">`;
-  const opts = [...q.options].sort(() => 0.5 - Math.random());
-  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt}' === '${q.correct}', '${q.correct}', '${q.text.replace('( ___ )', q.correct)}')">${opt}</div>`; });
-  container.innerHTML = html + `</div>`;
+  const fullSentence = q.text.replace('( ___ )', q.correct);
+  
+  container.innerHTML = `
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+      <p style="font-size:1.2rem; font-weight:800; margin:0;">( __ ) にはいるえいごは？</p>
+      <button class="voice-btn" style="width:40px; height:40px; font-size:1.2rem; margin:0;" id="q1-voice">🔊</button>
+    </div>
+    <div class="question-word">${q.text}</div>
+    <p class="question-ja">${q.ja}</p>
+    <div class="options-grid" id="q1-opts"></div>
+  `;
+  document.getElementById('q1-voice').onclick = () => speakCuteVoice(fullSentence);
+  
+  const optsGrid = document.getElementById('q1-opts');
+  [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'option-btn'; btn.innerText = opt;
+    btn.onclick = () => checkAnswer(opt === q.correct, q.correct, fullSentence);
+    optsGrid.appendChild(btn);
+  });
 }
 
-// 2問目：リスニング・イラスト一致
+// 2問目：リスニング
 function renderQ2(container) {
   const q = q2Data[Math.floor(Math.random() * q2Data.length)];
-  let html = `<p style="font-size:1.2rem; font-weight:800;">おとをきいて、えらぼう！</p>
-              <button class="voice-btn" onclick="speakCuteVoice('${q.text}')">🔊</button><div class="options-grid">`;
-  const opts = [...q.options].sort(() => 0.5 - Math.random());
-  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt.emoji}' === '${q.correctEmoji}', '${q.text}', '${q.ja}')"><span style="font-size:2rem;">${opt.emoji}</span> ${opt.text}</div>`; });
-  container.innerHTML = html + `</div>`;
+  container.innerHTML = `
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+      <p style="font-size:1.2rem; font-weight:800; margin:0;">おとをきいて、えらぼう！</p>
+      <button class="voice-btn" style="width:40px; height:40px; font-size:1.2rem; margin:0;" id="q2-voice">🔊</button>
+    </div>
+    <div class="options-grid" id="q2-opts" style="margin-top:20px;"></div>
+  `;
+  document.getElementById('q2-voice').onclick = () => speakCuteVoice(q.text);
+  
+  const optsGrid = document.getElementById('q2-opts');
+  [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span style="font-size:2rem;">${opt.emoji}</span> ${opt.text}`;
+    btn.onclick = () => checkAnswer(opt.emoji === q.correctEmoji, q.text, q.ja);
+    optsGrid.appendChild(btn);
+  });
   setTimeout(() => speakCuteVoice(q.text), 500);
 }
 
-// 3問目：並べ替え問題（タップ順）
+// 3問目：並べ替え
 function renderQ3(container) {
   const q = q3Data[Math.floor(Math.random() * q3Data.length)];
+  const fullSentence = q.words.join(' ');
   let currentAns = [];
   
   container.innerHTML = `
-    <p style="font-size:1.2rem; font-weight:800;">ただしい じゅんばんに ならべよう！</p>
-    <p class="question-ja" style="margin-bottom:10px;">${q.ja}</p>
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+      <p style="font-size:1.2rem; font-weight:800; margin:0;">じゅんばんに ならべよう！</p>
+      <button class="voice-btn" style="width:40px; height:40px; font-size:1.2rem; margin:0;" id="q3-voice">🔊</button>
+    </div>
+    <p class="question-ja" style="margin:10px 0;">${q.ja}</p>
     <div id="sort-area" class="sort-area"></div>
     <div id="sort-words" class="sort-words"></div>
   `;
+  document.getElementById('q3-voice').onclick = () => speakCuteVoice(fullSentence);
   
   const sortWordsBox = document.getElementById('sort-words');
   const sortArea = document.getElementById('sort-area');
-  const shuffled = [...q.words].sort(() => 0.5 - Math.random());
   
-  shuffled.forEach((word, idx) => {
+  [...q.words].sort(() => 0.5 - Math.random()).forEach(word => {
     const btn = document.createElement('div');
     btn.className = 'sort-word-btn'; btn.innerText = word;
     btn.onclick = () => {
@@ -346,21 +483,37 @@ function renderQ3(container) {
       sortArea.appendChild(placedBtn);
       
       if (currentAns.length === q.words.length) {
-        setTimeout(() => checkAnswer(currentAns.join(' ') === q.words.join(' '), q.words.join(' '), q.ja), 300);
+        setTimeout(() => checkAnswer(currentAns.join(' ') === fullSentence, fullSentence, q.ja), 300);
       }
     };
     sortWordsBox.appendChild(btn);
   });
 }
 
-// 4問目：会話の返答
+// 4問目：会話の返答（バグ解消版）
 function renderQ4(container) {
   const q = q4Data[Math.floor(Math.random() * q4Data.length)];
-  let html = `<p style="font-size:1.2rem; font-weight:800;">Aさんに なんて こたえる？</p>
-              <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid">`;
-  const opts = [...q.options].sort(() => 0.5 - Math.random());
-  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt}' === '${q.correct}', '${q.correct}', '')">${opt}</div>`; });
-  container.innerHTML = html + `</div>`;
+  const questionText = q.text.replace('A: ', '');
+  
+  container.innerHTML = `
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+      <p style="font-size:1.2rem; font-weight:800; margin:0;">Aさんに なんて こたえる？</p>
+      <button class="voice-btn" style="width:40px; height:40px; font-size:1.2rem; margin:0;" id="q4-voice">🔊</button>
+    </div>
+    <div class="question-word">${q.text}</div>
+    <p class="question-ja">${q.ja}</p>
+    <div class="options-grid" id="q4-opts"></div>
+  `;
+  document.getElementById('q4-voice').onclick = () => speakCuteVoice(questionText);
+  
+  const optsGrid = document.getElementById('q4-opts');
+  [...q.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'option-btn';
+    btn.innerText = opt;
+    btn.onclick = () => checkAnswer(opt === q.correct, q.correct, '');
+    optsGrid.appendChild(btn);
+  });
 }
 
 function speakCuteVoice(text) {
@@ -393,10 +546,7 @@ function checkAnswer(isCorrect, answerEn, answerJa) {
   setTimeout(() => { overlay.classList.remove('show'); if (isCorrect) { currentQIndex++; showNextQuestion(); } }, 2500); 
 }
 
-// 初期化実行
-window.onload = () => {
-  if (!currentFamily) initNewGame();
-};
+window.onload = () => { if (!currentFamily) initNewGame(); };
 </script>
 </body>
 </html>
