@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>えいごクイズ - 英検5級への道</title>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FF9800; --primary-shadow: #E65100;
+      --secondary: #03A9F4; --secondary-shadow: #0277BD;
+      --bg-color: #FFF3E0; --card-bg: #FFFFFF;
+      --text-main: #3E2723; --correct: #4CAF50; --incorrect: #F44336;
+    }
+    * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; background-color: var(--bg-color); background-image: radial-gradient(#FFE0B2 2px, transparent 2px); background-size: 20px 20px; color: var(--text-main); overflow-x: hidden; touch-action: manipulation; }
+    
+    #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+    .view { display: flex; flex-direction: column; align-items: center; padding: 15px; min-height: 100vh; transition: opacity 0.3s ease; }
+    .view.hidden { display: none; opacity: 0; }
+    
+    .app-header { text-align: center; margin-bottom: 10px; }
+    #main-title { font-size: 2rem; color: var(--primary-shadow); line-height: 1.2; text-shadow: 2px 2px 0px #FFF; margin: 10px 0; }
+    
+    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; overflow: hidden; }
+    #partner-image { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)); animation: float 3s ease-in-out infinite; transition: transform 0.3s; z-index: 2; position: relative; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; }
+    
+    .eating-msg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; color: #FF5722; font-weight: 900; opacity: 0; pointer-events: none; text-shadow: 2px 2px 0 #FFF; transition: all 0.3s; z-index: 3; }
+    .flying-food { position: fixed; font-size: 2.5rem; z-index: 1000; transition: all 0.5s cubic-bezier(0.5, -0.5, 1, 1); pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .heart-anim { position: absolute; font-size: 2rem; bottom: 40%; opacity: 0; animation: floatUpHeart 1s ease-out; pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+    @keyframes floatUpHeart { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-60px) scale(1.5); opacity: 0; } }
+    @keyframes chew { 0% { transform: scale(1); } 25% { transform: scale(1.15) rotate(-5deg); } 50% { transform: scale(0.95) rotate(5deg); } 75% { transform: scale(1.1) rotate(-3deg); } 100% { transform: scale(1); } }
+    .anim-chew { animation: chew 0.5s ease-in-out !important; }
+    
+    .status-board { width: 100%; background: #EFEBE9; padding: 12px 20px; border-radius: 16px; margin-bottom: 15px; }
+    .exp-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
+    .exp-label { font-size: 1.1rem; font-weight: 800; }
+    .exp-value { font-size: 1.4rem; font-weight: 900; color: var(--primary-shadow); }
+    .exp-bar-bg { background-color: #D7CCC8; border-radius: 15px; height: 24px; overflow: hidden; border: 3px solid #FFF; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .exp-bar-fill { background: linear-gradient(90deg, #FFB74D, #FF9800); height: 100%; width: 0%; border-radius: 10px; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    
+    .food-section { width: 100%; background: var(--card-bg); border-radius: 20px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .food-header h3 { margin: 0 0 5px 0; font-size: 1.2rem; text-align: center; }
+    .food-header p { margin: 0; font-size: 0.85rem; color: #795548; text-align: center; }
+    .food-list { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
+    
+    .food-item, .question-emoji, .option-btn span:first-child { text-shadow: 2px 2px 0px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.15); }
+    .food-item { width: 70px; height: 70px; font-size: 2.5rem; background: #FFF9C4; border: 3px solid #FFF59D; border-radius: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 6px 0 #FBC02D; transition: transform 0.1s, box-shadow 0.1s; }
+    .food-item:active:not(.locked):not(.eaten) { transform: translateY(6px); box-shadow: 0 0 0 #FBC02D; }
+    .food-item.locked { background: #E0E0E0; border-color: #F5F5F5; box-shadow: 0 6px 0 #BDBDBD; filter: grayscale(100%); pointer-events: none; }
+    .food-item.locked::after { content: '🔒'; position: absolute; font-size: 1.2rem; bottom: -5px; right: -5px; text-shadow: none; }
+    .food-item.eaten { background: #E8F5E9; border-color: #C8E6C9; box-shadow: 0 4px 0 #A5D6A7; transform: scale(0.95); pointer-events: none; filter: grayscale(100%) opacity(0.5); }
+    
+    .action-buttons { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    .btn { border: none; border-radius: 20px; font-weight: 900; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; text-align: center; outline: none; display: inline-flex; justify-content: center; align-items: center; }
+    .btn-large { width: 100%; padding: 16px; font-size: 1.4rem; }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 0 var(--primary-shadow); }
+    .btn-primary:active { transform: translateY(8px); box-shadow: 0 0 0 var(--primary-shadow); }
+    
+    .quiz-header-bar { margin-bottom: 15px; }
+    .badge { background: var(--secondary); color: #FFF; padding: 6px 16px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 0 var(--secondary-shadow); }
+    .quiz-card { background: var(--card-bg); width: 100%; padding: 24px; border-radius: 24px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border: 4px solid #FFF; text-align: center; }
+    .question-word { font-size: 2.2rem; font-weight: 900; color: #333; margin: 15px 0; line-height: 1.3; }
+    .question-ja { font-size: 1.4rem; color: #666; margin-bottom: 20px; }
+    
+    .options-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+    .option-btn { background: #FFF; border: 4px solid var(--secondary); border-radius: 16px; padding: 12px; font-size: 1.4rem; font-weight: 800; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 15px; box-shadow: 0 6px 0 var(--secondary); cursor: pointer; transition: 0.1s; }
+    .option-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+    
+    /* 並べ替え問題用CSS */
+    .sort-area { min-height: 60px; background: #F5F5F5; border: 3px dashed #BDBDBD; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
+    .sort-words { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .sort-word-btn { background: #FFF; border: 3px solid var(--primary); border-radius: 12px; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; color: var(--text-main); box-shadow: 0 4px 0 var(--primary-shadow); cursor: pointer; }
+    .sort-word-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-shadow); }
+    .sort-word-btn.selected { visibility: hidden; }
+    
+    .voice-btn { background: #4CAF50; box-shadow: 0 6px 0 #2E7D32; border-radius: 50%; width: 60px; height: 60px; font-size: 1.8rem; border: none; color: white; cursor: pointer; margin-bottom: 10px; display:inline-flex; justify-content:center; align-items:center;}
+    .voice-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2E7D32; }
+    
+    .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.95); z-index: 100; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+    .feedback-card { text-align: center; background: #FFF; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 5px solid var(--primary); width: 90%; max-width: 400px; }
+    .feedback-icon { font-size: 6rem; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .feedback-text { font-size: 1.5rem; font-weight: 900; margin-top: 10px; line-height: 1.4; }
+    @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    
+    .evo-rings { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; z-index: -1; overflow: hidden; }
+    .evo-ring { position: absolute; width: 0; height: 0; border-radius: 50%; border: 15px solid #FFC107; animation: ringExpand 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite; box-shadow: 0 0 30px #FF9800, inset 0 0 30px #FF9800; opacity: 0; }
+    .evo-ring:nth-child(2) { animation-delay: 0.6s; border-color: #03A9F4; box-shadow: 0 0 30px #00BCD4, inset 0 0 30px #00BCD4; }
+    .evo-ring:nth-child(3) { animation-delay: 1.2s; border-color: #E91E63; box-shadow: 0 0 30px #E91E63, inset 0 0 30px #E91E63; }
+    @keyframes ringExpand { 0% { width: 0; height: 0; opacity: 1; border-width: 20px; } 100% { width: 150vw; height: 150vw; opacity: 0; border-width: 2px; } }
+    #evolve-image { width: 220px; height: 220px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); animation: pulseGlow 1.5s infinite alternate; margin-bottom: 20px;}
+    @keyframes pulseGlow { 0% { transform: scale(1); filter: drop-shadow(0 0 10px #FF9800); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFEB3B); } }
+    .evolve-text { font-size: 2.2rem; color: var(--primary-shadow); font-weight: 900; margin-bottom: 30px; text-align: center; text-shadow: 2px 2px #FFF, 0 0 10px #FFF59D;}
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div id="room-view" class="view active">
+    <header class="app-header"><h1 id="main-title">えいごクイズ</h1></header>
+    <div class="partner-stage">
+      <img id="partner-image" src="" alt="パートナー">
+      <div id="eating-msg" class="eating-msg">もぐもぐ♪</div>
+      <h2 id="partner-name">読み込み中...</h2>
+    </div>
+    <div class="status-board">
+      <div class="exp-header"><span class="exp-label">なかよし度</span><span class="exp-value"><span id="exp-text">0</span>%</span></div>
+      <div class="exp-bar-bg"><div id="exp-bar" class="exp-bar-fill"></div></div>
+    </div>
+    <div class="food-section">
+      <div class="food-header"><h3>ごはんボックス</h3><p>4もんせいかいで、ごはんが1つひらくよ！</p></div>
+      <div id="food-list" class="food-list"></div>
+    </div>
+    <div class="action-buttons">
+      <button id="start-quiz-btn" class="btn btn-primary btn-large">クイズをする (4もん)</button>
+      <button id="reset-game-btn" class="btn btn-danger btn-large" style="margin-top:10px;">あたらしいポケモンとあそぶ🔄</button>
+    </div>
+  </div>
+
+  <div id="quiz-view" class="view hidden">
+    <div class="quiz-header-bar"><span id="quiz-progress-text" class="badge">だい 1 もん! (1/4)</span></div>
+    <div id="quiz-content" class="quiz-card"></div>
+  </div>
+</div>
+
+<div id="feedback-overlay" class="overlay">
+  <div class="feedback-card">
+    <div id="feedback-icon" class="feedback-icon">⭕</div>
+    <div id="feedback-text" class="feedback-text">せいかい！</div>
+  </div>
+</div>
+
+<div id="evolve-overlay" class="overlay" style="background: rgba(255,255,255,0.85);">
+  <div class="evo-rings"><div class="evo-ring"></div><div class="evo-ring"></div><div class="evo-ring"></div></div>
+  <img id="evolve-image" src="" alt="しんか！">
+  <h2 id="evolve-text" class="evolve-text">おめでとう！<br>しんかした！</h2>
+  <button id="close-evolve-btn" class="btn btn-primary btn-large" style="width:80%; max-width:300px;">いっしょにあそぶ！</button>
+</div>
+
+<script>
+  // 2段階進化するポケモン10種
+const pokemonFamilies = [
+  { stage0: {id: 172, name: "ピチュー"}, stage1: {id: 25, name: "ピカチュウ"}, stage2: {id: 26, name: "ライチュウ"} },
+  { stage0: {id: 92, name: "ゴース"}, stage1: {id: 93, name: "ゴースト"}, stage2: {id: 94, name: "ゲンガー"} },
+  { stage0: {id: 7, name: "ゼニガメ"}, stage1: {id: 8, name: "カメール"}, stage2: {id: 9, name: "カメックス"} },
+  { stage0: {id: 175, name: "トゲピー"}, stage1: {id: 176, name: "トゲチック"}, stage2: {id: 468, name: "トゲキッス"} },
+  { stage0: {id: 60, name: "ニョロモ"}, stage1: {id: 61, name: "ニョロゾ"}, stage2: {id: 62, name: "ニョロボン"} },
+  { stage0: {id: 393, name: "ポッチャマ"}, stage1: {id: 394, name: "ポッタイシ"}, stage2: {id: 395, name: "エンペルト"} },
+  { stage0: {id: 574, name: "ゴチム"}, stage1: {id: 575, name: "ゴチミル"}, stage2: {id: 576, name: "ゴチルゼル"} },
+  { stage0: {id: 607, name: "ヒトモシ"}, stage1: {id: 608, name: "ランプラー"}, stage2: {id: 609, name: "シャンデラ"} },
+  { stage0: {id: 722, name: "モクロー"}, stage1: {id: 723, name: "フクスロー"}, stage2: {id: 724, name: "ジュナイパー"} },
+  { stage0: {id: 728, name: "アシマリ"}, stage1: {id: 729, name: "オシャマリ"}, stage2: {id: 730, name: "アシレーヌ"} }
+];
+
+const allFoods = [
+  { name: "ハンバーガー", emoji: "🍔" }, { name: "おすし", emoji: "🍣" }, { name: "ラーメン", emoji: "🍜" }, { name: "おにぎり", emoji: "🍙" }, 
+  { name: "カレー", emoji: "🍛" }, { name: "ピザ", emoji: "🍕" }, { name: "アイス", emoji: "🍦" }, { name: "ドーナツ", emoji: "🍩" }, 
+  { name: "パンケーキ", emoji: "🥞" }, { name: "ステーキ", emoji: "🥩" }, { name: "サンドイッチ", emoji: "🥪" }, { name: "たこやき", emoji: "🐙" }
+];
+
+// Q1: 穴あき問題データ（文法・単語）
+const q1Data = [
+  { text: "I ( ___ ) an apple.", ja: "わたしは りんごを たべます。", correct: "eat", options: ["eat", "play", "read", "swim"] },
+  { text: "The cat is ( ___ ) the desk.", ja: "ねこは つくえの したに います。", correct: "under", options: ["in", "on", "under", "at"] },
+  { text: "( ___ ) is your birthday?", ja: "あなたの たんじょうびは いつですか？", correct: "When", options: ["What", "When", "Who", "Where"] },
+  { text: "This is ( ___ ) book.", ja: "これは わたしの ほんです。", correct: "my", options: ["I", "my", "me", "mine"] },
+  { text: "I like ( ___ ).", ja: "わたしは いぬが すきです。", correct: "dogs", options: ["dogs", "cats", "birds", "fish"] }
+];
+
+// Q2: リスニング・イラスト一致データ
+const q2Data = [
+  { text: "It is sunny.", ja: "はれ", correctEmoji: "☀️", options: [{emoji:"☀️", text:"はれ"}, {emoji:"🌧️", text:"あめ"}, {emoji:"☁️", text:"くもり"}] },
+  { text: "I have a book.", ja: "ほん", correctEmoji: "📖", options: [{emoji:"📖", text:"ほん"}, {emoji:"🖊️", text:"ペン"}, {emoji:"🎒", text:"かばん"}] },
+  { text: "She is a doctor.", ja: "おいしゃさん", correctEmoji: "🧑‍⚕️", options: [{emoji:"🧑‍⚕️", text:"いしゃ"}, {emoji:"🧑‍🏫", text:"せんせい"}, {emoji:"👮", text:"けいさつ"}] },
+  { text: "I play baseball.", ja: "やきゅう", correctEmoji: "⚾", options: [{emoji:"⚾", text:"やきゅう"}, {emoji:"⚽", text:"サッカー"}, {emoji:"🎾", text:"テニス"}] },
+  { text: "Let's go to the park.", ja: "こうえん", correctEmoji: "⛲", options: [{emoji:"⛲", text:"こうえん"}, {emoji:"🏫", text:"がっこう"}, {emoji:"🏥", text:"びょういん"}] }
+];
+
+// Q3: 並べ替え問題データ（配列順が正解）
+const q3Data = [
+  { ja: "わたしは テニスを します。", words: ["I", "play", "tennis."] },
+  { ja: "あなたは だれですか？", words: ["Who", "are", "you?"] },
+  { ja: "これは わたしの ペンです。", words: ["This", "is", "my", "pen."] },
+  { ja: "サッカーを しましょう！", words: ["Let's", "play", "soccer!"] },
+  { ja: "わたしは いぬが すきです。", words: ["I", "like", "dogs."] }
+];
+
+// Q4: 会話の返答問題データ
+const q4Data = [
+  { text: "A: How are you?", ja: "ちょうしは どう？", correct: "I'm fine.", options: ["I'm fine.", "I'm a boy.", "Yes, I am.", "Good morning."] },
+  { text: "A: Thank you.", ja: "ありがとう。", correct: "You're welcome.", options: ["You're welcome.", "I'm sorry.", "Please.", "Good job!"] },
+  { text: "A: Let's play soccer!", ja: "サッカーしよう！", correct: "Yes, let's.", options: ["Yes, let's.", "No, it isn't.", "I am sorry.", "Thank you."] },
+  { text: "A: What time is it?", ja: "いま なんじ？", correct: "It's three.", options: ["It's three.", "It's a clock.", "Yes, it is.", "It's sunny."] },
+  { text: "A: Can you swim?", ja: "およげる？", correct: "Yes, I can.", options: ["Yes, I can.", "Yes, it is.", "No, I am not.", "I like swimming."] }
+];
+  function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
+
+let totalExp = 0, evolutionStage = 0; // 0=初期, 1=1段階, 2=2段階
+let currentFamily = null;
+let activeFoods = [];
+let synthVoices = [];
+
+window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
+
+const roomView = document.getElementById('room-view'), quizView = document.getElementById('quiz-view');
+const foodListEl = document.getElementById('food-list'), expText = document.getElementById('exp-text'), expBar = document.getElementById('exp-bar');
+const partnerImg = document.getElementById('partner-image'), partnerName = document.getElementById('partner-name');
+const evolveImg = document.getElementById('evolve-image');
+
+// 新しいポケモンをランダムに選ぶ
+function initNewGame() {
+  currentFamily = pokemonFamilies[Math.floor(Math.random() * pokemonFamilies.length)];
+  totalExp = 0; evolutionStage = 0;
+  activeFoods = [...allFoods].sort(() => 0.5 - Math.random()).slice(0, 4).map((f, i) => ({ ...f, unlockExp: (i + 1) * 25, isEaten: false }));
+  renderRoom();
+}
+
+function renderRoom() {
+  foodListEl.innerHTML = "";
+  let currentPoke = evolutionStage === 0 ? currentFamily.stage0 : (evolutionStage === 1 ? currentFamily.stage1 : currentFamily.stage2);
+  partnerImg.src = getPokemonImageUrl(currentPoke.id);
+  partnerName.innerText = currentPoke.name;
+  
+  expText.innerText = totalExp; expBar.style.width = totalExp + "%";
+  
+  activeFoods.forEach((food, index) => {
+    const isUnlocked = totalExp >= food.unlockExp; // 25, 50, 75, 100ごとにアンロック
+    const foodEl = document.createElement('div');
+    if (food.isEaten) { foodEl.className = 'food-item eaten'; foodEl.innerText = food.emoji; }
+    else if (!isUnlocked) { foodEl.className = 'food-item locked'; foodEl.innerText = food.emoji; }
+    else { foodEl.className = 'food-item'; foodEl.innerText = food.emoji; if(evolutionStage < 2) foodEl.onclick = (e) => feedPartner(index, element=foodEl); }
+    foodListEl.appendChild(foodEl);
+  });
+}
+
+function feedPartner(index, element) {
+  if (activeFoods[index].isEaten) return;
+  const flying = document.createElement('div'); flying.innerText = element.innerText; flying.className = 'flying-food';
+  const rect = element.getBoundingClientRect(); flying.style.left = rect.left + 'px'; flying.style.top = rect.top + 'px';
+  document.body.appendChild(flying);
+  element.classList.add('eaten'); activeFoods[index].isEaten = true;
+  
+  setTimeout(() => {
+    const pRect = partnerImg.getBoundingClientRect();
+    flying.style.left = (pRect.left + pRect.width/2 - 20) + 'px'; flying.style.top = (pRect.top + pRect.height/2 - 20) + 'px';
+    flying.style.transform = 'scale(0.5) rotate(360deg)'; flying.style.opacity = '0';
+  }, 50);
+
+  setTimeout(() => {
+    flying.remove();
+    const msg = document.getElementById('eating-msg'); msg.style.opacity = 1; msg.style.transform = "translate(-50%, -20px)"; partnerImg.classList.add("anim-chew");
+    
+    // ハート演出
+    for(let i=0; i<4; i++) {
+      const h = document.createElement('div'); h.innerText = '💖'; h.className = 'heart-anim';
+      h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
+      document.querySelector('.partner-stage').appendChild(h); setTimeout(() => h.remove(), 1000);
+    }
+    
+    setTimeout(() => {
+      msg.style.opacity = 0; msg.style.transform = "translate(-50%, 0)"; partnerImg.classList.remove("anim-chew");
+      // 50%と100%で進化チェック
+      if (totalExp === 50 && evolutionStage === 0) { evolutionStage = 1; evolveAnim(currentFamily.stage1); }
+      else if (totalExp === 100 && evolutionStage === 1) { evolutionStage = 2; evolveAnim(currentFamily.stage2); }
+      else { renderRoom(); }
+    }, 1000);
+  }, 550);
+}
+
+function evolveAnim(targetPoke) {
+  document.getElementById('evolve-image').src = getPokemonImageUrl(targetPoke.id);
+  document.getElementById('evolve-text').innerHTML = `おめでとう！<br>${targetPoke.name} に しんかした！`;
+  document.getElementById('evolve-overlay').classList.add('show');
+  renderRoom();
+}
+
+document.getElementById('close-evolve-btn').onclick = () => document.getElementById('evolve-overlay').classList.remove('show');
+document.getElementById('reset-game-btn').onclick = () => { if(confirm("あたらしいポケモンをよぶ？")) initNewGame(); };
+
+// クイズロジック
+let currentQIndex = 0;
+document.getElementById('start-quiz-btn').onclick = () => { roomView.classList.add('hidden'); quizView.classList.remove('hidden'); currentQIndex = 0; showNextQuestion(); };
+
+function showNextQuestion() {
+  if (currentQIndex >= 4) { 
+    totalExp += 25; // 4問クリアで25%UP
+    if(totalExp > 100) totalExp = 100;
+    quizView.classList.add('hidden'); roomView.classList.remove('hidden'); renderRoom(); return; 
+  }
+  document.getElementById('quiz-progress-text').innerText = `だい ${currentQIndex + 1} もん! (英検5級)`;
+  const contentEl = document.getElementById('quiz-content'); contentEl.innerHTML = "";
+  
+  if (currentQIndex === 0) { renderQ1(contentEl); }      // 穴あき
+  else if (currentQIndex === 1) { renderQ2(contentEl); } // リスニング
+  else if (currentQIndex === 2) { renderQ3(contentEl); } // 並べ替え
+  else if (currentQIndex === 3) { renderQ4(contentEl); } // 会話
+}
+
+// 1問目：穴あき問題
+function renderQ1(container) {
+  const q = q1Data[Math.floor(Math.random() * q1Data.length)];
+  let html = `<p style="font-size:1.2rem; font-weight:800;">( __ ) にはいる えいごは？</p>
+              <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid">`;
+  const opts = [...q.options].sort(() => 0.5 - Math.random());
+  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt}' === '${q.correct}', '${q.correct}', '${q.text.replace('( ___ )', q.correct)}')">${opt}</div>`; });
+  container.innerHTML = html + `</div>`;
+}
+
+// 2問目：リスニング・イラスト一致
+function renderQ2(container) {
+  const q = q2Data[Math.floor(Math.random() * q2Data.length)];
+  let html = `<p style="font-size:1.2rem; font-weight:800;">おとをきいて、えらぼう！</p>
+              <button class="voice-btn" onclick="speakCuteVoice('${q.text}')">🔊</button><div class="options-grid">`;
+  const opts = [...q.options].sort(() => 0.5 - Math.random());
+  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt.emoji}' === '${q.correctEmoji}', '${q.text}', '${q.ja}')"><span style="font-size:2rem;">${opt.emoji}</span> ${opt.text}</div>`; });
+  container.innerHTML = html + `</div>`;
+  setTimeout(() => speakCuteVoice(q.text), 500);
+}
+
+// 3問目：並べ替え問題（タップ順）
+function renderQ3(container) {
+  const q = q3Data[Math.floor(Math.random() * q3Data.length)];
+  let currentAns = [];
+  
+  container.innerHTML = `
+    <p style="font-size:1.2rem; font-weight:800;">ただしい じゅんばんに ならべよう！</p>
+    <p class="question-ja" style="margin-bottom:10px;">${q.ja}</p>
+    <div id="sort-area" class="sort-area"></div>
+    <div id="sort-words" class="sort-words"></div>
+  `;
+  
+  const sortWordsBox = document.getElementById('sort-words');
+  const sortArea = document.getElementById('sort-area');
+  const shuffled = [...q.words].sort(() => 0.5 - Math.random());
+  
+  shuffled.forEach((word, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'sort-word-btn'; btn.innerText = word;
+    btn.onclick = () => {
+      btn.classList.add('selected'); currentAns.push(word);
+      const placedBtn = document.createElement('div'); placedBtn.className = 'sort-word-btn'; placedBtn.innerText = word;
+      placedBtn.onclick = () => { placedBtn.remove(); btn.classList.remove('selected'); currentAns = currentAns.filter(w => w !== word); };
+      sortArea.appendChild(placedBtn);
+      
+      if (currentAns.length === q.words.length) {
+        setTimeout(() => checkAnswer(currentAns.join(' ') === q.words.join(' '), q.words.join(' '), q.ja), 300);
+      }
+    };
+    sortWordsBox.appendChild(btn);
+  });
+}
+
+// 4問目：会話の返答
+function renderQ4(container) {
+  const q = q4Data[Math.floor(Math.random() * q4Data.length)];
+  let html = `<p style="font-size:1.2rem; font-weight:800;">Aさんに なんて こたえる？</p>
+              <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid">`;
+  const opts = [...q.options].sort(() => 0.5 - Math.random());
+  opts.forEach(opt => { html += `<div class="option-btn" onclick="checkAnswer('${opt}' === '${q.correct}', '${q.correct}', '')">${opt}</div>`; });
+  container.innerHTML = html + `</div>`;
+}
+
+function speakCuteVoice(text) {
+  const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US';
+  if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
+  const cuteVoice = synthVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Female')));
+  if (cuteVoice) msg.voice = cuteVoice; msg.pitch = 1.0; msg.rate = 0.9; window.speechSynthesis.speak(msg);
+}
+
+const correctVoices = ["Good job!", "Excellent!", "Perfect!", "Great!", "Awesome!"];
+const incorrectVoices = ["Oh no", "Try again", "Oops", "Almost"];
+
+function checkAnswer(isCorrect, answerEn, answerJa) {
+  const overlay = document.getElementById('feedback-overlay'), icon = document.getElementById('feedback-icon'), text = document.getElementById('feedback-text');
+  let speakText = "";
+  
+  if (isCorrect) {
+    icon.innerText = "⭕"; icon.style.color = "var(--correct)";
+    text.innerHTML = `せいかい！すごい！<br><span style="font-size:1.8rem; color:var(--primary-shadow); display:block; margin-top:15px;">${answerEn}</span><span style="font-size:1.2rem; color:var(--text-main);">${answerJa}</span>`;
+    text.style.color = "var(--correct)";
+    speakText = correctVoices[Math.floor(Math.random() * correctVoices.length)];
+  } else {
+    icon.innerText = "❌"; icon.style.color = "var(--incorrect)";
+    text.innerHTML = `おしい！もういちど！<br><span style="font-size:1rem; color:#666; display:block; margin-top:15px;">せいかいは：</span><span style="font-size:1.8rem; color:var(--primary-shadow); display:block;">${answerEn}</span><span style="font-size:1.2rem; color:var(--text-main);">${answerJa}</span>`;
+    text.style.color = "var(--incorrect)";
+    speakText = incorrectVoices[Math.floor(Math.random() * incorrectVoices.length)];
+  }
+  
+  overlay.classList.add('show'); speakCuteVoice(speakText);
+  setTimeout(() => { overlay.classList.remove('show'); if (isCorrect) { currentQIndex++; showNextQuestion(); } }, 2500); 
+}
+
+// 初期化実行
+window.onload = () => {
+  if (!currentFamily) initNewGame();
+};
+</script>
+</body>
+</html>
