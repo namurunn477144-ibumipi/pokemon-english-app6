@@ -6,7 +6,7 @@
   <title>えいごクイズ - いぶちゃん＆みーちゃん</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* ベース：「えいたんご（明るい黄色・オレンジ系）」 */
+    /* ベース：「えいたんご（明るいひまわりイエロー）」 */
     :root {
       --primary: #FFB300; --primary-shadow: #FF8F00;
       --secondary: #03A9F4; --secondary-shadow: #0277BD;
@@ -15,12 +15,13 @@
       --bg-dot: #FFE082;
     }
     
-    /* 「えいぶんモード」も黄色～温かみのあるオレンジ基調に統合 */
+    /* 「えいぶんモード」（鮮やかなエメラルドグリーン・ミント系：色味をくっきり差別化！） */
     body.mode-grammar {
-      --primary: #FF9800; --primary-shadow: #E65100;
-      --secondary: #26A69A; --secondary-shadow: #00695C;
-      --bg-color: #FFF3E0;
-      --bg-dot: #FFE0B2;
+      --primary: #00897B; --primary-shadow: #004D40;
+      --secondary: #FF9800; --secondary-shadow: #E65100;
+      --bg-color: #E0F2F1;
+      --bg-dot: #80CBC4;
+      --text-main: #004D40;
     }
 
     * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -73,11 +74,11 @@
     .effect-anim { position: absolute; font-size: 2rem; bottom: 40%; opacity: 0; animation: floatUpEffect 1s ease-out; pointer-events: none; z-index: 15; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
     @keyframes floatUpEffect { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-70px) scale(1.5) rotate(15deg); opacity: 0; } }
     
-    .status-board { width: 100%; background: #EFEBE9; padding: 12px 20px; border-radius: 16px; margin-bottom: 15px; }
+    .status-board { width: 100%; background: rgba(0,0,0,0.05); padding: 12px 20px; border-radius: 16px; margin-bottom: 15px; }
     .exp-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
     .exp-label { font-size: 1.1rem; font-weight: 800; }
     .exp-value { font-size: 1.4rem; font-weight: 900; color: var(--primary-shadow); }
-    .exp-bar-bg { background-color: #D7CCC8; border-radius: 15px; height: 24px; overflow: hidden; border: 3px solid #FFF; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .exp-bar-bg { background-color: rgba(0,0,0,0.1); border-radius: 15px; height: 24px; overflow: hidden; border: 3px solid #FFF; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
     .exp-bar-fill { background: var(--primary); height: 100%; width: 0%; border-radius: 10px; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     
     .food-section { width: 100%; background: var(--card-bg); border-radius: 20px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
