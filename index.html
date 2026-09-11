@@ -6,18 +6,21 @@
   <title>えいごクイズ - いぶちゃん＆みーちゃん</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* ベース：「えいたんご（明るい黄色・オレンジ系）」 */
     :root {
-      --primary: #FF9800; --primary-shadow: #E65100;
+      --primary: #FFB300; --primary-shadow: #FF8F00;
       --secondary: #03A9F4; --secondary-shadow: #0277BD;
-      --bg-color: #FFF3E0; --card-bg: #FFFFFF;
+      --bg-color: #FFFDE7; --card-bg: #FFFFFF;
       --text-main: #3E2723; --correct: #4CAF50; --incorrect: #F44336;
-      --bg-dot: #FFE0B2;
+      --bg-dot: #FFE082;
     }
     
+    /* 「えいぶんモード」も黄色～温かみのあるオレンジ基調に統合 */
     body.mode-grammar {
-      --primary: #8BC34A; --primary-shadow: #689F38;
-      --secondary: #FFB300; --secondary-shadow: #FF8F00;
-      --bg-color: #F1F8E9; --bg-dot: #DCEDC8;
+      --primary: #FF9800; --primary-shadow: #E65100;
+      --secondary: #26A69A; --secondary-shadow: #00695C;
+      --bg-color: #FFF3E0;
+      --bg-dot: #FFE0B2;
     }
 
     * { box-sizing: border-box; font-family: 'M PLUS Rounded 1c', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -30,10 +33,28 @@
     .app-header { text-align: center; margin-bottom: 10px; }
     #main-title { font-size: 2rem; color: var(--primary-shadow); line-height: 1.2; text-shadow: 2px 2px 0px #FFF; margin: 10px 0; transition: color 0.5s; }
     
-    .partner-stage { position: relative; background: var(--card-bg); width: 100%; border-radius: 24px; padding: 40px 20px 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; cursor: pointer; }
+    /* ステージ背景の設定 */
+    .partner-stage { position: relative; width: 100%; border-radius: 24px; padding: 40px 20px 20px; border: 4px solid #FFF; box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; cursor: pointer; overflow: hidden; transition: background 0.5s; }
+    
+    /* ① イーブイ用：ラブリー背景 */
+    .partner-stage.bg-lovely { background: linear-gradient(180deg, #FFF0F5 0%, #FFD1DC 100%); }
+    .partner-stage.bg-lovely::before { content: '💖✨'; position: absolute; bottom: 8px; left: 12px; font-size: 1.2rem; opacity: 0.7; }
+    .partner-stage.bg-lovely::after { content: '✨💖'; position: absolute; bottom: 8px; right: 12px; font-size: 1.2rem; opacity: 0.7; }
+
+    /* ② 2段階最終進化用：カッコいい背景 */
+    .partner-stage.bg-cool { background: linear-gradient(180deg, #2A0845 0%, #6441A5 100%); border-color: #FFD700; }
+    .partner-stage.bg-cool::before { content: '⚡⭐'; position: absolute; bottom: 8px; left: 12px; font-size: 1.2rem; opacity: 0.8; }
+    .partner-stage.bg-cool::after { content: '⭐⚡'; position: absolute; bottom: 8px; right: 12px; font-size: 1.2rem; opacity: 0.8; }
+    .partner-stage.bg-cool #partner-name { color: #FFD700; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+    /* ③ 通常用：イエロー基調背景 */
+    .partner-stage.bg-yellow { background: linear-gradient(180deg, #FFFDE7 0%, #FFE082 100%); }
+    .partner-stage.bg-yellow::before { content: '⭐✨'; position: absolute; bottom: 8px; left: 12px; font-size: 1.2rem; opacity: 0.7; }
+    .partner-stage.bg-yellow::after { content: '✨⭐'; position: absolute; bottom: 8px; right: 12px; font-size: 1.2rem; opacity: 0.7; }
+
     #partner-image { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)); animation: float 3s ease-in-out infinite; transition: transform 0.3s; z-index: 5; position: relative; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-    #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; pointer-events: none; }
+    #partner-name { font-size: 1.8rem; color: var(--text-main); margin: 10px 0 0 0; pointer-events: none; font-weight: 900; }
     
     .poke-comment { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #FFF; border: 3px solid var(--primary); border-radius: 20px; padding: 8px 15px; font-size: 1.1rem; font-weight: 900; color: var(--text-main); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
     .poke-comment::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: var(--primary) transparent transparent transparent; }
@@ -64,7 +85,6 @@
     .food-header p { margin: 0; font-size: 0.85rem; color: #795548; text-align: center; }
     .food-list { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
     
-    .food-item, .question-emoji, .option-btn span:first-child { text-shadow: 2px 2px 0px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.15); }
     .food-item { width: 70px; height: 70px; font-size: 2.5rem; background: #FFF9C4; border: 3px solid #FFF59D; border-radius: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 6px 0 #FBC02D; transition: transform 0.1s, box-shadow 0.1s; }
     .food-item:active:not(.locked):not(.eaten) { transform: translateY(6px); box-shadow: 0 0 0 #FBC02D; }
     .food-item.locked { background: #E0E0E0; border-color: #F5F5F5; box-shadow: 0 6px 0 #BDBDBD; filter: grayscale(100%); pointer-events: none; }
@@ -129,7 +149,7 @@
 <div id="app">
   <div id="room-view" class="view active">
     <header class="app-header"><h1 id="main-title">えいたんごクイズ</h1></header>
-    <div class="partner-stage" onclick="interactPokemon()">
+    <div id="partner-stage" class="partner-stage bg-lovely" onclick="interactPokemon()">
       <div id="poke-comment" class="poke-comment">がんばろうね！</div>
       <img id="partner-image" src="" alt="パートナー">
       <div id="eating-msg" class="eating-msg">もぐもぐ♪</div>
@@ -212,11 +232,9 @@ const allFoods = [
   { name: "パンケーキ", emoji: "🥞" }, { name: "ステーキ", emoji: "🥩" }, { name: "サンドイッチ", emoji: "🥪" }, { name: "たこやき", emoji: "🐙" }
 ];
 
-// タップ時の可愛いコメント
 const pokeComments = ["たのしいね！", "だーいすき！", "いぶちゃん、がんばろうね！", "みーちゃん、がんばろうね！", "いぶちゃん、みーちゃん、すごい！", "えらいね！", "わーい！"];
 const effectEmojis = ["💖", "✨", "⭐", "🎵"];
 
-// 正解・不正解コメントのレパートリー
 const correctTexts = ["せいかい！すごい！", "かんぺき！", "すばらしい！", "やったね！", "さすが！"];
 const incorrectTexts = ["おしい！もういちど！", "どんまい！", "つぎは がんばろう！", "ファイト！", "ざんねん！"];
 
@@ -346,7 +364,7 @@ const q4Data = [
   { text: "A: Can you swim?", ja: "およげる？", correct: "Yes, I can.", options: ["Yes, I can.", "Yes, it is.", "No, I am not.", "I like swimming."] },
   { text: "A: Good morning.", ja: "おはよう。", correct: "Good morning.", options: ["Good morning.", "Good night.", "Goodbye.", "Thank you."] },
   { text: "A: Nice to meet you.", ja: "はじめまして。", correct: "Nice to meet you, too.", options: ["Nice to meet you, too.", "See you.", "I am fine.", "Yes, I do."] },
-  { text: "A: What is your name?", ja: "なまえは なに？", correct: "I am Tom.", options: ["I am Tom.", "It is a pen.", "Yes, I am.", "I am fine."] },
+  { text: "A: What is your name?", ja: "なまえは なに？", correct: "I am Tom.", options: ["I am Tom.", "It is a pen.", "Yes, it is.", "I am fine."] },
   { text: "A: How old are you?", ja: "なんさい？", correct: "I am ten.", options: ["I am ten.", "I am fine.", "It is ten.", "Yes, I do."] },
   { text: "A: Do you like tennis?", ja: "テニスは すき？", correct: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, I can.", "No, it is not."] },
   { text: "A: Are you a student?", ja: "あなたは がくせいですか？", correct: "Yes, I am.", options: ["Yes, I am.", "Yes, I do.", "Yes, I can.", "No, I don't."] },
@@ -372,7 +390,6 @@ const q4Data = [
 ];
   function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
-// モード別の完全な状態管理
 let isWordMode = true; 
 let wordState = { exp: 0, keys: 0, isEvolved: false, partnerId: 133, partnerName: "イーブイ", foods: [] };
 let grammarState = { exp: 0, keys: 0, stage: 0, familyIdx: -1, foods: [] };
@@ -384,6 +401,7 @@ const roomView = document.getElementById('room-view'), quizView = document.getEl
 const foodListEl = document.getElementById('food-list'), expText = document.getElementById('exp-text'), expBar = document.getElementById('exp-bar');
 const partnerImg = document.getElementById('partner-image'), partnerName = document.getElementById('partner-name');
 const resetGameBtn = document.getElementById('reset-game-btn');
+const partnerStage = document.getElementById('partner-stage');
 
 function initWordMode() {
   wordState = { exp: 0, keys: 0, isEvolved: false, partnerId: 133, partnerName: "イーブイ", foods: [] };
@@ -402,17 +420,37 @@ function getCurrentPoke() {
   return family.stage2;
 }
 
+// 【背景自動変更機能】
+function updateStageBackground() {
+  partnerStage.classList.remove('bg-lovely', 'bg-cool', 'bg-yellow');
+  
+  if (isWordMode) {
+    if (wordState.isEvolved) {
+      partnerStage.classList.add('bg-cool'); // イーブイ進化後はカッコいい背景
+    } else {
+      partnerStage.classList.add('bg-lovely'); // イーブイの時はラブリーピンク背景
+    }
+  } else {
+    if (grammarState.stage === 2) {
+      partnerStage.classList.add('bg-cool'); // 2段階進化完了後はカッコいい背景
+    } else {
+      partnerStage.classList.add('bg-yellow'); // 初期～1段階目は黄色背景
+    }
+  }
+}
+
 function renderRoom() {
   foodListEl.innerHTML = "";
   const currentPoke = getCurrentPoke();
   partnerImg.src = getPokemonImageUrl(currentPoke.id);
   partnerName.innerText = currentPoke.name;
   
+  updateStageBackground(); // 背景を更新
+  
   const currentExp = isWordMode ? wordState.exp : grammarState.exp;
   const currentKeys = isWordMode ? wordState.keys : grammarState.keys;
   expText.innerText = currentExp; expBar.style.width = currentExp + "%";
   
-  // 進化完了後のみリセットボタン表示
   if ((isWordMode && wordState.isEvolved) || (!isWordMode && grammarState.stage === 2)) {
     resetGameBtn.style.display = 'inline-flex';
   } else {
@@ -435,7 +473,6 @@ function renderRoom() {
   });
 }
 
-// タップ吹き出し＆エフェクト
 let commentTimeout = null;
 function interactPokemon() {
   const commentBox = document.getElementById('poke-comment');
@@ -468,7 +505,7 @@ function spawnEffects() {
   for(let i=0; i<4; i++) {
     const h = document.createElement('div'); h.innerText = emoji; h.className = 'effect-anim';
     h.style.left = (35 + Math.random()*30) + '%'; h.style.animationDelay = (Math.random()*0.2) + 's';
-    document.querySelector('.partner-stage').appendChild(h); setTimeout(() => h.remove(), 1000);
+    partnerStage.appendChild(h); setTimeout(() => h.remove(), 1000);
   }
 }
 
@@ -547,7 +584,6 @@ document.getElementById('mode-toggle-btn').onclick = () => {
   renderRoom();
 };
 
-// --- クイズロジック ---
 let currentQIndex = 0;
 let roundWordQuestions = [];
 
@@ -575,9 +611,6 @@ function showNextQuestion() {
   }
 }
 
-// -------------------------------------
-// えいぶんクイズのレンダーロジック
-// -------------------------------------
 function renderQ1(container) {
   const q = q1Data[Math.floor(Math.random() * q1Data.length)];
   const fullSentence = q.text.replace('( ___ )', q.correct);
@@ -653,11 +686,15 @@ function renderQ3(container) {
   createSortButtons(); resetSortBtn.onclick = () => createSortButtons();
 }
 
+// 【ゆっくり丁寧な英語読み上げ】rate: 0.7 に変更して聞き取りやすく！
 function speakWithPause(text1, text2) {
   const msg1 = new SpeechSynthesisUtterance(text1); msg1.lang = 'en-US';
   if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
   const cuteVoice = synthVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Female')));
-  if (cuteVoice) msg1.voice = cuteVoice; msg1.pitch = 1.0; msg1.rate = 0.9;
+  if (cuteVoice) msg1.voice = cuteVoice; 
+  msg1.pitch = 1.0; 
+  msg1.rate = 0.7; // スピードをゆっくり（0.7）に調整
+  
   msg1.onend = () => { setTimeout(() => { speakCuteVoice(text2); }, 1000); };
   window.speechSynthesis.speak(msg1);
 }
@@ -683,9 +720,6 @@ function renderQ4(container) {
   });
 }
 
-// -------------------------------------
-// えいたんごクイズのレンダーロジック
-// -------------------------------------
 function renderWordModeQuestion(container, qData, qType) {
   if (!(window.SpeechRecognition || window.webkitSpeechRecognition) && qType === 2) qType = 1;
   if (qType === 1) { 
@@ -737,11 +771,15 @@ function createWordTextOptions(correctData, container) {
   });
 }
 
+// 【ゆっくり丁寧な英語読み上げ】rate: 0.7 に指定！
 function speakCuteVoice(text) {
   const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US';
   if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
   const cuteVoice = synthVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Female')));
-  if (cuteVoice) msg.voice = cuteVoice; msg.pitch = 1.0; msg.rate = 0.9; window.speechSynthesis.speak(msg);
+  if (cuteVoice) msg.voice = cuteVoice; 
+  msg.pitch = 1.0; 
+  msg.rate = 0.7; // スピードをゆっくりに設定
+  window.speechSynthesis.speak(msg);
 }
 
 const correctVoices = ["Good job!", "Excellent!", "Perfect!", "Great!", "Awesome!"];
