@@ -398,6 +398,37 @@ let grammarState = { exp: 0, keys: 0, stage: 0, familyIdx: -1, foods: [] };
 let synthVoices = [];
 window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
 
+// =========================================================
+// ▼▼ アイフォン対応の声とマイクの設定 ▼▼
+// =========================================================
+function speakEnglishVoice(text) {
+  if (!text) return;
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = 'en-US';
+  
+  if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
+  
+  // iPhoneの優しくて綺麗な声「Samantha（サマンサ）」を指名！
+  let friendlyVoice = synthVoices.find(v => v.name === "Samantha" || v.name === "Karen");
+  if (!friendlyVoice) friendlyVoice = synthVoices.find(v => v.lang.startsWith('en'));
+  if (friendlyVoice) msg.voice = friendlyVoice;
+  
+  msg.pitch = 1.3;  // 高くて可愛い声にする魔法の数字
+  msg.rate = 0.55;  // 子供むけにゆっくり
+  
+  window.speechSynthesis.speak(msg);
+}
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if (typeof SpeechRecognition !== 'undefined') {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.continuous = false;
+}
+// =========================================================
+
 const roomView = document.getElementById('room-view'), quizView = document.getElementById('quiz-view');
 const foodListEl = document.getElementById('food-list'), expText = document.getElementById('exp-text'), expBar = document.getElementById('exp-bar');
 const partnerImg = document.getElementById('partner-image'), partnerName = document.getElementById('partner-name');
