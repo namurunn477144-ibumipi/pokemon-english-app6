@@ -266,6 +266,9 @@
     @media (prefers-reduced-motion: reduce) {
       #partner-image, .poke-wrap img, .poke-wrap::after, .food-item.ready, .bg-deco *, .partner-stage::after, .exp-bar-fill::after, #start-quiz-btn::after { animation: none !important; }
     }
+    /* 3Dの えもじ */
+    .emo { display: inline-block; width: 1.2em; height: 1.2em; object-fit: contain; vertical-align: -0.25em; -webkit-user-drag: none; }
+    .question-emoji .emo, .opt-emoji .emo { width: 1.1em; height: 1.1em; vertical-align: middle; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.12)); }
   </style>
 </head>
 <body>
@@ -376,20 +379,599 @@ const correctTexts = ["せいかい！すごい！", "かんぺき！", "すば�
 const incorrectTexts = ["おしい！もういちど！", "どんまい！", "つぎは がんばろう！", "ファイト！", "ざんねん！"];
 
 // えいたんごクイズ用データ
-const wordData = [
-  { en: "Dog", ja: "いぬ", emoji: "🐶" }, { en: "Cat", ja: "ねこ", emoji: "🐱" }, { en: "Rabbit", ja: "うさぎ", emoji: "🐰" }, { en: "Elephant", ja: "ぞう", emoji: "🐘" }, { en: "Lion", ja: "ライオン", emoji: "🦁" },
-  { en: "Tiger", ja: "とら", emoji: "🐯" }, { en: "Bear", ja: "くま", emoji: "🐻" }, { en: "Monkey", ja: "さる", emoji: "🐵" }, { en: "Mouse", ja: "ねずみ", emoji: "🐭" }, { en: "Cow", ja: "うし", emoji: "🐮" },
-  { en: "Apple", ja: "りんご", emoji: "🍎" }, { en: "Banana", ja: "バナナ", emoji: "🍌" }, { en: "Orange", ja: "オレンジ", emoji: "🍊" }, { en: "Grape", ja: "ぶどう", emoji: "🍇" }, { en: "Strawberry", ja: "いちご", emoji: "🍓" },
-  { en: "Car", ja: "くるま", emoji: "🚗" }, { en: "Bus", ja: "バス", emoji: "🚌" }, { en: "Train", ja: "でんしゃ", emoji: "🚃" }, { en: "Airplane", ja: "ひこうき", emoji: "✈️" }, { en: "Ship", ja: "ふね", emoji: "🚢" },
-  { en: "Red", ja: "あか", emoji: "🔴" }, { en: "Blue", ja: "あお", emoji: "🔵" }, { en: "Yellow", ja: "きいろ", emoji: "🟡" }, { en: "Green", ja: "みどり", emoji: "🟢" }, { en: "Pink", ja: "ピンク", emoji: "🌸" },
-  { en: "One", ja: "いち", emoji: "1️⃣" }, { en: "Two", ja: "に", emoji: "2️⃣" }, { en: "Three", ja: "さん", emoji: "3️⃣" }, { en: "Four", ja: "よん", emoji: "4️⃣" }, { en: "Five", ja: "ご", emoji: "5️⃣" },
-  { en: "Monday", ja: "げつようび", emoji: "📅" }, { en: "Sunday", ja: "にちようび", emoji: "📅" }, { en: "Today", ja: "きょう", emoji: "☀️" }, { en: "Tomorrow", ja: "あした", emoji: "🔜" }, { en: "Yesterday", ja: "きのう", emoji: "🔙" },
-  { en: "Father", ja: "おとうさん", emoji: "👨" }, { en: "Mother", ja: "おかあさん", emoji: "👩" }, { en: "Teacher", ja: "せんせい", emoji: "🧑‍🏫" }, { en: "Police officer", ja: "けいさつかん", emoji: "👮" }, { en: "Doctor", ja: "おいしゃさん", emoji: "🧑‍⚕️" },
-  { en: "Book", ja: "ほん", emoji: "📖" }, { en: "Chair", ja: "いす", emoji: "🪑" }, { en: "Bag", ja: "かばん", emoji: "🎒" }, { en: "Shoes", ja: "くつ", emoji: "👟" }, { en: "Clock", ja: "とけい", emoji: "🕰️" },
-  { en: "School", ja: "がっこう", emoji: "🏫" }, { en: "Park", ja: "こうえん", emoji: "⛲" }, { en: "Hospital", ja: "びょういん", emoji: "🏥" }, { en: "Station", ja: "えき", emoji: "🚉" }, { en: "Supermarket", ja: "スーパー", emoji: "🛒" },
-  { en: "Play", ja: "あそぶ", emoji: "⚽" }, { en: "Run", ja: "はしる", emoji: "🏃" }, { en: "Eat", ja: "たべる", emoji: "😋" }, { en: "Read", ja: "よむ", emoji: "📖" }, { en: "Sleep", ja: "ねる", emoji: "😴" },
-  { en: "Big", ja: "おおきい", emoji: "🐘" }, { en: "Small", ja: "ちいさい", emoji: "🐭" }, { en: "Fast", ja: "はやい", emoji: "🏎️" }, { en: "Happy", ja: "うれしい", emoji: "😊" }, { en: "Cute", ja: "かわいい", emoji: "🎀" }
-];
+// 英検5級の たんご（テーマ|えいご|いみ|え）
+const WORD_LIST = `
+animal|dog|いぬ|🐶
+animal|cat|ねこ|🐱
+animal|rabbit|うさぎ|🐰
+animal|elephant|ぞう|🐘
+animal|lion|ライオン|🦁
+animal|tiger|とら|🐯
+animal|bear|くま|🐻
+animal|monkey|さる|🐵
+animal|mouse|ねずみ|🐭
+animal|cow|うし|🐮
+animal|pig|ぶた|🐷
+animal|horse|うま|🐴
+animal|sheep|ひつじ|🐑
+animal|bird|とり|🐦
+animal|fish|さかな|🐟
+animal|frog|かえる|🐸
+animal|panda|パンダ|🐼
+animal|koala|コアラ|🐨
+animal|giraffe|きりん|🦒
+animal|zebra|しまうま|🦓
+animal|penguin|ペンギン|🐧
+animal|dolphin|いるか|🐬
+animal|whale|くじら|🐳
+animal|turtle|かめ|🐢
+animal|snake|へび|🐍
+animal|chicken|にわとり|🐔
+animal|duck|あひる|🦆
+animal|owl|ふくろう|🦉
+animal|butterfly|ちょうちょ|🦋
+animal|bee|はち（むし）|🐝
+animal|ant|あり|🐜
+animal|fox|きつね|🦊
+animal|gorilla|ゴリラ|🦍
+animal|kangaroo|カンガルー|🦘
+animal|hamster|ハムスター|🐹
+animal|octopus|たこ|🐙
+animal|crab|かに|🦀
+animal|dinosaur|きょうりゅう|🦕
+animal|spider|くも|🕷️
+animal|shark|さめ|🦈
+animal|animal|どうぶつ|🐾
+animal|pet|ペット|🐕
+fruit|apple|りんご|🍎
+fruit|banana|バナナ|🍌
+fruit|orange|オレンジ|🍊
+fruit|grapes|ぶどう|🍇
+fruit|strawberry|いちご|🍓
+fruit|peach|もも|🍑
+fruit|melon|メロン|🍈
+fruit|watermelon|すいか|🍉
+fruit|lemon|レモン|🍋
+fruit|cherry|さくらんぼ|🍒
+fruit|pineapple|パイナップル|🍍
+fruit|kiwi|キウイ|🥝
+fruit|tomato|トマト|🍅
+fruit|potato|じゃがいも|🥔
+fruit|carrot|にんじん|🥕
+fruit|onion|たまねぎ|🧅
+fruit|corn|とうもろこし|🌽
+fruit|cabbage|キャベツ|🥬
+fruit|mushroom|きのこ|🍄
+fruit|cucumber|きゅうり|🥒
+fruit|pumpkin|かぼちゃ|🎃
+fruit|fruit|くだもの|🍐
+fruit|vegetable|やさい|🥦
+food|bread|パン|🍞
+food|rice|ごはん|🍚
+food|egg|たまご|🥚
+food|cake|ケーキ|🍰
+food|pizza|ピザ|🍕
+food|hamburger|ハンバーガー|🍔
+food|sandwich|サンドイッチ|🥪
+food|spaghetti|スパゲッティ|🍝
+food|curry and rice|カレーライス|🍛
+food|salad|サラダ|🥗
+food|soup|スープ|🥣
+food|cookie|クッキー|🍪
+food|chocolate|チョコレート|🍫
+food|ice cream|アイスクリーム|🍨
+food|donut|ドーナツ|🍩
+food|candy|あめ（おかし）|🍬
+food|popcorn|ポップコーン|🍿
+food|hot dog|ホットドッグ|🌭
+food|cheese|チーズ|🧀
+food|honey|はちみつ|🍯
+food|milk|ぎゅうにゅう|🥛
+food|water|みず|💧
+food|juice|ジュース|🧃
+food|tea|おちゃ|🍵
+food|coffee|コーヒー|☕
+food|salt|しお|🧂
+food|sugar|さとう|
+food|meat|おにく|🍖
+food|steak|ステーキ|🥩
+food|pancake|パンケーキ|🥞
+food|noodles|めん|🍜
+food|sushi|すし|🍣
+food|rice ball|おにぎり|🍙
+food|pie|パイ|🥧
+food|yogurt|ヨーグルト|
+food|food|たべもの|🍱
+food|breakfast|あさごはん|🍳
+food|lunch|ひるごはん|🍱
+food|dinner|ばんごはん|🍽️
+color|red|あか|🔴
+color|blue|あお|🔵
+color|yellow|きいろ|🟡
+color|green|みどり|🟢
+color|pink|ピンク|🩷
+color|white|しろ|⚪
+color|black|くろ|⚫
+color|brown|ちゃいろ|🟤
+color|purple|むらさき|🟣
+color|color|いろ|🎨
+color|rainbow|にじ|🌈
+number|zero|ゼロ|0️⃣
+number|one|いち|1️⃣
+number|two|に|2️⃣
+number|three|さん|3️⃣
+number|four|よん|4️⃣
+number|five|ご|5️⃣
+number|six|ろく|6️⃣
+number|seven|なな|7️⃣
+number|eight|はち（8）|8️⃣
+number|nine|きゅう|9️⃣
+number|ten|じゅう|🔟
+number|eleven|じゅういち（11）|
+number|twelve|じゅうに（12）|
+number|thirteen|じゅうさん（13）|
+number|fourteen|じゅうよん（14）|
+number|fifteen|じゅうご（15）|
+number|sixteen|じゅうろく（16）|
+number|seventeen|じゅうなな（17）|
+number|eighteen|じゅうはち（18）|
+number|nineteen|じゅうきゅう（19）|
+number|twenty|にじゅう（20）|
+number|thirty|さんじゅう（30）|
+number|forty|よんじゅう（40）|
+number|fifty|ごじゅう（50）|
+number|sixty|ろくじゅう（60）|
+number|seventy|ななじゅう（70）|
+number|eighty|はちじゅう（80）|
+number|ninety|きゅうじゅう（90）|
+number|one hundred|ひゃく（100）|💯
+number|first|1ばんめ|🥇
+number|second|2ばんめ|🥈
+number|third|3ばんめ|🥉
+number|number|かず|🔢
+day|Sunday|にちようび|
+day|Monday|げつようび|
+day|Tuesday|かようび|
+day|Wednesday|すいようび|
+day|Thursday|もくようび|
+day|Friday|きんようび|
+day|Saturday|どようび|
+month|January|1がつ|
+month|February|2がつ|
+month|March|3がつ|
+month|April|4がつ|
+month|May|5がつ|
+month|June|6がつ|
+month|July|7がつ|
+month|August|8がつ|
+month|September|9がつ|
+month|October|10がつ|
+month|November|11がつ|
+month|December|12がつ|
+time|spring|はる|🌸
+time|summer|なつ|🌻
+time|fall|あき|🍁
+time|winter|ふゆ|⛄
+time|season|きせつ|
+time|morning|あさ|🌅
+time|afternoon|ごご|
+time|evening|ゆうがた|🌇
+time|night|よる|🌙
+time|today|きょう|
+time|tomorrow|あした|
+time|yesterday|きのう|
+time|day|ひ|
+time|week|しゅう|
+time|weekend|しゅうまつ|
+time|month|つき（〜かげつ）|
+time|year|とし（〜ねん）|
+time|time|じかん|⏰
+time|o'clock|〜じ|🕐
+time|minute|ふん|⏱️
+time|hour|じかん（1じかん）|⌛
+time|birthday|たんじょうび|🎂
+time|calendar|カレンダー|📅
+time|holiday|やすみのひ|🏖️
+weather|weather|てんき|🌤️
+weather|sunny|はれ|☀️
+weather|rainy|あめの てんき|🌧️
+weather|cloudy|くもり|☁️
+weather|snowy|ゆきの てんき|❄️
+weather|windy|かぜが つよい|🌬️
+weather|hot|あつい|🥵
+weather|cold|さむい|🥶
+weather|warm|あたたかい|
+weather|cool|すずしい|
+family|father|おとうさん|👨
+family|mother|おかあさん|👩
+family|brother|きょうだい（あに・おとうと）|👦
+family|sister|しまい（あね・いもうと）|👧
+family|grandfather|おじいさん|👴
+family|grandmother|おばあさん|👵
+family|baby|あかちゃん|👶
+family|family|かぞく|
+family|friend|ともだち|🤝
+family|boy|おとこのこ|🧒
+family|girl|おんなのこ|👧
+family|man|おとこのひと|👨
+family|woman|おんなのひと|👩
+family|child|こども|🧒
+family|uncle|おじさん|
+family|aunt|おばさん|
+family|people|ひとびと|👥
+job|teacher|せんせい|🧑‍🏫
+job|student|せいと|🧑‍🎓
+job|doctor|おいしゃさん|🧑‍⚕️
+job|nurse|かんごし|🩺
+job|police officer|けいさつかん|👮
+job|firefighter|しょうぼうし|🧑‍🚒
+job|cook|りょうりにん|🧑‍🍳
+job|pilot|パイロット|🧑‍✈️
+job|farmer|のうか|🧑‍🌾
+job|singer|かしゅ|🧑‍🎤
+job|artist|がか|🧑‍🎨
+job|astronaut|うちゅうひこうし|🧑‍🚀
+job|dancer|ダンサー|💃
+job|vet|じゅうい|🐕‍🦺
+body|head|あたま|🧠
+body|hair|かみのけ|💇
+body|face|かお|😀
+body|eye|め|👁️
+body|ear|みみ|👂
+body|nose|はな（かおの はな）|👃
+body|mouth|くち|👄
+body|tooth|は|🦷
+body|hand|て|✋
+body|arm|うで|💪
+body|leg|あし|🦵
+body|foot|あし（あしくび から した）|🦶
+body|finger|ゆび|☝️
+body|body|からだ|🧍
+school|school|がっこう|🏫
+school|classroom|きょうしつ|
+school|book|ほん|📖
+school|notebook|ノート|📓
+school|pencil|えんぴつ|✏️
+school|pen|ペン|🖊️
+school|eraser|けしゴム|
+school|ruler|じょうぎ|📏
+school|bag|かばん|🎒
+school|desk|つくえ|
+school|chair|いす|🪑
+school|textbook|きょうかしょ|📚
+school|dictionary|じしょ|📕
+school|homework|しゅくだい|📝
+school|test|テスト|💯
+school|class|じゅぎょう（クラス）|
+school|English|えいご|🔤
+school|Japanese|こくご（にほんご）|
+school|math|さんすう|🔢
+school|science|りか|🔬
+school|music|おんがく|🎵
+school|art|ずこう（びじゅつ）|🎨
+school|P.E.|たいいく|🤸
+school|social studies|しゃかい|🌏
+school|library|としょかん|📚
+school|gym|たいいくかん|
+school|map|ちず|🗺️
+school|scissors|はさみ|✂️
+school|crayon|クレヨン|🖍️
+school|computer|コンピューター|💻
+school|paper|かみ|📄
+school|letter|てがみ|✉️
+school|name|なまえ|📛
+school|word|ことば|🔤
+school|question|しつもん|❓
+school|answer|こたえ|💡
+thing|house|いえ|🏠
+thing|room|へや|
+thing|kitchen|だいどころ|
+thing|bed|ベッド|🛏️
+thing|door|ドア|🚪
+thing|window|まど|🪟
+thing|table|テーブル|
+thing|sofa|ソファ|🛋️
+thing|TV|テレビ|📺
+thing|telephone|でんわ|📞
+thing|camera|カメラ|📷
+thing|cup|カップ|🥤
+thing|dish|おさら|🍽️
+thing|fork|フォーク|🍴
+thing|knife|ナイフ|🔪
+thing|spoon|スプーン|🥄
+thing|chopsticks|はし|🥢
+thing|box|はこ|📦
+thing|ball|ボール|⚽
+thing|doll|にんぎょう|🪆
+thing|toy|おもちゃ|🧸
+thing|piano|ピアノ|🎹
+thing|guitar|ギター|🎸
+thing|drum|たいこ|🥁
+thing|violin|バイオリン|🎻
+thing|umbrella|かさ|☂️
+thing|key|かぎ|🔑
+thing|watch|うでどけい|⌚
+thing|clock|とけい|🕰️
+thing|cap|ぼうし（キャップ）|🧢
+thing|hat|ぼうし|👒
+thing|shirt|シャツ|👕
+thing|pants|ズボン|👖
+thing|skirt|スカート|
+thing|dress|ドレス|👗
+thing|shoes|くつ|👟
+thing|socks|くつした|🧦
+thing|gloves|てぶくろ|🧤
+thing|coat|コート|🧥
+thing|glasses|めがね|👓
+thing|present|プレゼント|🎁
+thing|picture|え（しゃしん）|🖼️
+thing|balloon|ふうせん|🎈
+thing|bath|おふろ|🛁
+thing|towel|タオル|
+thing|soap|せっけん|🧼
+thing|toothbrush|はブラシ|🪥
+thing|money|おかね|💰
+thing|ticket|きっぷ|🎫
+thing|newspaper|しんぶん|📰
+thing|comic book|まんが|
+thing|game|ゲーム|🎮
+thing|puzzle|パズル|🧩
+thing|robot|ロボット|🤖
+thing|kite|たこ（あげる たこ）|🪁
+thing|candle|ろうそく|🕯️
+thing|card|カード|🃏
+nature|flower|はな（さく はな）|🌷
+nature|tree|き|🌳
+nature|garden|にわ|🏡
+nature|star|ほし|⭐
+nature|moon|つき|🌙
+nature|sun|たいよう|☀️
+nature|sky|そら|
+nature|rain|あめ（ふる あめ）|☔
+nature|snow|ゆき|☃️
+nature|mountain|やま|⛰️
+nature|river|かわ|🏞️
+nature|sea|うみ|🌊
+nature|lake|みずうみ|
+nature|beach|すなはま|🏖️
+nature|island|しま|🏝️
+nature|forest|もり|🌲
+nature|leaf|はっぱ|🍃
+nature|rock|いわ|🪨
+nature|world|せかい|🌍
+nature|Japan|にほん|🗾
+nature|country|くに|
+place|park|こうえん|⛲
+place|station|えき|🚉
+place|hospital|びょういん|🏥
+place|supermarket|スーパー|🛒
+place|store|おみせ|🏪
+place|restaurant|レストラン|
+place|zoo|どうぶつえん|🦓
+place|aquarium|すいぞくかん|🐠
+place|museum|はくぶつかん|🏛️
+place|post office|ゆうびんきょく|🏣
+place|bank|ぎんこう|🏦
+place|hotel|ホテル|🏨
+place|shrine|じんじゃ|⛩️
+place|castle|おしろ|🏯
+place|bookstore|ほんや|
+place|bakery|パンや|🥐
+place|flower shop|はなや|💐
+place|airport|くうこう|🛫
+place|stadium|スタジアム|🏟️
+place|pool|プール|🏊
+place|amusement park|ゆうえんち|🎡
+place|city|まち（とかい）|🏙️
+place|town|まち|🏘️
+place|street|みち（とおり）|
+place|bridge|はし（わたる はし）|🌉
+place|farm|のうじょう|🚜
+place|home|いえ（じぶんの いえ）|🏡
+place|school gate|こうもん|
+transport|car|くるま|🚗
+transport|bus|バス|🚌
+transport|train|でんしゃ|🚃
+transport|airplane|ひこうき|✈️
+transport|ship|ふね|🚢
+transport|boat|ボート|🚤
+transport|taxi|タクシー|🚕
+transport|truck|トラック|🚚
+transport|bike|じてんしゃ|🚲
+transport|subway|ちかてつ|🚇
+transport|rocket|ロケット|🚀
+transport|helicopter|ヘリコプター|🚁
+transport|fire engine|しょうぼうしゃ|🚒
+transport|ambulance|きゅうきゅうしゃ|🚑
+transport|police car|パトカー|🚓
+sport|baseball|やきゅう|⚾
+sport|soccer|サッカー|⚽
+sport|basketball|バスケットボール|🏀
+sport|tennis|テニス|🎾
+sport|volleyball|バレーボール|🏐
+sport|table tennis|たっきゅう|🏓
+sport|badminton|バドミントン|🏸
+sport|swimming|すいえい|🏊
+sport|skiing|スキー|⛷️
+sport|skating|スケート|⛸️
+sport|rugby|ラグビー|🏉
+sport|golf|ゴルフ|⛳
+sport|judo|じゅうどう|🥋
+sport|dodgeball|ドッジボール|
+sport|sport|スポーツ|🏅
+sport|team|チーム|
+sport|cooking|りょうり|🍳
+sport|reading|どくしょ|📖
+sport|singing|うたうこと|🎤
+sport|dancing|ダンス|💃
+sport|drawing|えを かくこと|🖍️
+sport|fishing|つり|🎣
+sport|camping|キャンプ|🏕️
+sport|shopping|かいもの|🛍️
+sport|hiking|ハイキング|🥾
+verb|play|あそぶ（する）|🤾
+verb|eat|たべる|😋
+verb|drink|のむ|🥤
+verb|run|はしる|🏃
+verb|walk|あるく|🚶
+verb|swim|およぐ|🏊
+verb|jump|ジャンプする|🤸
+verb|sing|うたう|🎤
+verb|dance|おどる|💃
+verb|read|よむ|📖
+verb|write|かく（じを かく）|✍️
+verb|draw|かく（えを かく）|🎨
+verb|listen|きく|👂
+verb|speak|はなす|🗣️
+verb|see|みる（みえる）|👀
+verb|watch|みる（テレビなどを みる）|📺
+verb|study|べんきょうする|📚
+verb|sleep|ねる|😴
+verb|get up|おきる|⏰
+verb|go|いく|
+verb|come|くる|
+verb|have|もっている|
+verb|like|すき|❤️
+verb|want|ほしい|
+verb|make|つくる|🛠️
+verb|cook|りょうりする|🍳
+verb|wash|あらう|🧼
+verb|clean|そうじする|🧹
+verb|open|あける|
+verb|close|しめる|
+verb|sit|すわる|🪑
+verb|stand|たつ|🧍
+verb|help|てつだう|🤝
+verb|know|しっている|
+verb|live|すんでいる|🏠
+verb|buy|かう|🛒
+verb|use|つかう|
+verb|ride|のる|🚲
+verb|fly|とぶ|🕊️
+verb|climb|のぼる|🧗
+verb|teach|おしえる|🧑‍🏫
+verb|practice|れんしゅうする|
+verb|start|はじめる|
+verb|stop|とまる|🛑
+verb|call|でんわする|📞
+verb|visit|たずねる|
+verb|take|とる（もっていく）|
+verb|give|あげる|🎁
+verb|enjoy|たのしむ|😄
+verb|think|かんがえる|🤔
+verb|smile|ほほえむ|😊
+verb|cry|なく|😢
+verb|wait|まつ|⏳
+verb|brush|みがく|🪥
+verb|find|みつける|🔍
+verb|finish|おえる|🏁
+verb|look|みる（めを むける）|
+verb|need|ひつようと する|
+verb|do|する|
+verb|say|いう|💬
+verb|put|おく|
+verb|catch|とる（キャッチする）|🧤
+verb|throw|なげる|
+verb|kick|ける|
+verb|love|だいすき|💕
+verb|go home|いえに かえる|
+adj|big|おおきい|🐘
+adj|small|ちいさい|🐭
+adj|long|ながい|
+adj|short|みじかい|
+adj|tall|せが たかい|🦒
+adj|new|あたらしい|🆕
+adj|old|ふるい（としを とった）|
+adj|young|わかい|
+adj|good|いい|👍
+adj|bad|わるい|👎
+adj|happy|うれしい|😊
+adj|sad|かなしい|😢
+adj|angry|おこっている|😠
+adj|hungry|おなかが すいた|🤤
+adj|sleepy|ねむい|🥱
+adj|tired|つかれた|😩
+adj|fine|げんきな|😄
+adj|sick|びょうきの|🤒
+adj|fast|はやい|🏎️
+adj|slow|おそい|🐢
+adj|beautiful|うつくしい|💐
+adj|cute|かわいい|🎀
+adj|cool|かっこいい|😎
+adj|kind|やさしい|🤗
+adj|nice|すてきな|
+adj|fun|たのしい|🎉
+adj|interesting|おもしろい|🤩
+adj|easy|かんたんな|
+adj|difficult|むずかしい|😵
+adj|strong|つよい|💪
+adj|busy|いそがしい|
+adj|great|すばらしい|🌟
+adj|delicious|おいしい|😋
+adj|sweet|あまい|🍭
+adj|heavy|おもい|🏋️
+adj|favorite|いちばん すきな|⭐
+adj|famous|ゆうめいな|
+adj|right|みぎ|➡️
+adj|left|ひだり|⬅️
+adj|many|たくさんの|
+adj|little|すこしの（ちいさい）|
+adj|all|ぜんぶの|
+word|what|なに|
+word|who|だれ|
+word|where|どこ|
+word|when|いつ|
+word|how|どうやって（どう）|
+word|which|どちら|
+word|whose|だれの|
+word|how many|いくつ|
+word|how much|いくら|
+word|I|わたし|
+word|you|あなた|
+word|he|かれ|
+word|she|かのじょ|
+word|we|わたしたち|
+word|they|かれら|
+word|it|それ|
+word|my|わたしの|
+word|your|あなたの|
+word|his|かれの|
+word|her|かのじょの|
+word|this|これ|
+word|that|あれ|
+word|in|〜の なかに|
+word|on|〜の うえに|
+word|under|〜の したに|
+word|near|〜の ちかくに|
+word|with|〜と いっしょに|
+word|from|〜から|
+word|after|〜の あとで|
+word|before|〜の まえに|
+word|yes|はい|
+word|no|いいえ|
+word|and|そして（〜と）|
+word|but|でも|
+word|or|または|
+word|very|とても|
+word|too|〜も|
+word|well|じょうずに|
+word|here|ここ|
+word|there|そこ|
+word|now|いま|
+word|often|よく|
+word|sometimes|ときどき|
+word|always|いつも|
+word|usually|たいてい|
+word|every day|まいにち|
+word|together|いっしょに|
+word|hello|こんにちは|👋
+word|goodbye|さようなら|👋
+word|thank you|ありがとう|🙏
+word|sorry|ごめんなさい|🙇
+word|please|おねがいします|
+word|OK|いいよ|👌
+`;
+const wordData = WORD_LIST.trim().split('\n').map(line => { const [cat, en, ja, emoji] = line.split('|'); return { cat, en, ja, emoji: emoji || '' }; });
   // Q1: 穴あき問題（30問）
 const q1Data = [
   { text: "I ( ___ ) an apple.", ja: "わたしは りんごを たべます。", correct: "eat", options: ["eat", "play", "read", "swim"] },
@@ -442,7 +1024,7 @@ const q2Data = [
   { text: "It is spring.", ja: "はる", correctEmoji: "🌸", options: [{emoji:"🌸", text:"はる"}, {emoji:"🌻", text:"なつ"}, {emoji:"⛄", text:"ふゆ"}] },
   { text: "I have one apple.", ja: "いち", correctEmoji: "1️⃣", options: [{emoji:"1️⃣", text:"いち"}, {emoji:"2️⃣", text:"に"}, {emoji:"3️⃣", text:"さん"}] },
   { text: "It is big.", ja: "おおきい", correctEmoji: "🐘", options: [{emoji:"🐘", text:"おおきい"}, {emoji:"🐭", text:"ちいさい"}, {emoji:"🦒", text:"たかい"}] },
-  { text: "Today is Monday.", ja: "げつようび", correctEmoji: "📅", options: [{emoji:"📅", text:"げつようび"}, {emoji:"☀️", text:"きょう"}, {emoji:"🔜", text:"あした"}] },
+  { text: "I like penguins.", ja: "ペンギン", correctEmoji: "🐧", options: [{emoji:"🐧", text:"ペンギン"}, {emoji:"🦉", text:"ふくろう"}, {emoji:"🐔", text:"にわとり"}] },
   { text: "I eat meat.", ja: "おにく", correctEmoji: "🍖", options: [{emoji:"🍖", text:"おにく"}, {emoji:"🐟", text:"さかな"}, {emoji:"🥚", text:"たまご"}] },
   { text: "I drink water.", ja: "みず", correctEmoji: "💧", options: [{emoji:"💧", text:"みず"}, {emoji:"🥛", text:"ぎゅうにゅう"}, {emoji:"🧃", text:"ジュース"}] },
   { text: "I have a hat.", ja: "ぼうし", correctEmoji: "🧢", options: [{emoji:"🧢", text:"ぼうし"}, {emoji:"👕", text:"シャツ"}, {emoji:"👟", text:"くつ"}] },
@@ -487,7 +1069,6 @@ const q3Data = [
   { ja: "わたしは 7じに おきます。", words: ["I", "get", "up", "at", "seven."] },
   { ja: "あなたの なまえは なんですか？", words: ["What", "is", "your", "name?"] },
   { ja: "たんじょうびは いつですか？", words: ["When", "is", "your", "birthday?"] },
-  { ja: "これを ください。", words: ["I", "will", "take", "this."] },
   { ja: "わたしは とても うれしいです。", words: ["I", "am", "very", "happy."] },
   { ja: "かれらは わたしの ともだちです。", words: ["They", "are", "my", "friends."] }
 ];
@@ -525,6 +1106,135 @@ const q4Data = [
   { text: "A: Can I help you?", ja: "いらっしゃいませ。", correct: "Yes, please.", options: ["Yes, please.", "You're welcome.", "That's OK.", "I am fine."] },
   { text: "A: This is for you.", ja: "これ、あなたに。", correct: "Thank you.", options: ["Thank you.", "You're welcome.", "Yes, I am.", "That's OK."] }
 ];
+
+// ==========================================
+// 【英検5級 ついか】ぶんぽう・かいわ もんだい
+// ==========================================
+q1Data.push(
+  { text: "( ___ ) many apples do you have?", ja: "りんごを いくつ もっていますか？", correct: "How", options: ["How", "What", "Who", "Where"] },
+  { text: "( ___ ) color do you like?", ja: "なにいろが すきですか？", correct: "What", options: ["What", "Who", "How", "When"] },
+  { text: "( ___ ) time is it?", ja: "いま なんじですか？", correct: "What", options: ["What", "Who", "Where", "How"] },
+  { text: "I am ( ___ ) TV now.", ja: "わたしは いま テレビを みています。", correct: "watching", options: ["watching", "watch", "watches", "to watch"] },
+  { text: "She is ( ___ ) a book.", ja: "かのじょは ほんを よんでいます。", correct: "reading", options: ["reading", "read", "reads", "to read"] },
+  { text: "They are ( ___ ) soccer.", ja: "かれらは サッカーを しています。", correct: "playing", options: ["playing", "play", "plays", "to play"] },
+  { text: "He ( ___ ) tennis every day.", ja: "かれは まいにち テニスを します。", correct: "plays", options: ["plays", "play", "playing", "is"] },
+  { text: "My mother ( ___ ) a car.", ja: "わたしの おかあさんは くるまを もっています。", correct: "has", options: ["has", "have", "is", "are"] },
+  { text: "Tom ( ___ ) to school by bus.", ja: "トムは バスで がっこうに いきます。", correct: "goes", options: ["goes", "go", "going", "is"] },
+  { text: "( ___ ) you like cats?", ja: "あなたは ねこが すきですか？", correct: "Do", options: ["Do", "Are", "Is", "Does"] },
+  { text: "( ___ ) she play the piano?", ja: "かのじょは ピアノを ひきますか？", correct: "Does", options: ["Does", "Do", "Is", "Are"] },
+  { text: "I ( ___ ) like carrots.", ja: "わたしは にんじんが すきでは ありません。", correct: "don't", options: ["don't", "am not", "isn't", "not"] },
+  { text: "( ___ ) your hands.", ja: "てを あらいなさい。", correct: "Wash", options: ["Wash", "Washes", "Washing", "To wash"] },
+  { text: "( ___ ) run in the classroom.", ja: "きょうしつで はしっては いけません。", correct: "Don't", options: ["Don't", "Not", "No", "Isn't"] },
+  { text: "My birthday is ( ___ ) May.", ja: "わたしの たんじょうびは 5がつです。", correct: "in", options: ["in", "on", "at", "to"] },
+  { text: "I play soccer ( ___ ) Sunday.", ja: "わたしは にちようびに サッカーを します。", correct: "on", options: ["on", "in", "at", "to"] },
+  { text: "I go to bed ( ___ ) nine.", ja: "わたしは 9じに ねます。", correct: "at", options: ["at", "in", "on", "to"] },
+  { text: "This is a cat. ( ___ ) is cute.", ja: "これは ねこです。それは かわいいです。", correct: "It", options: ["It", "He", "They", "We"] },
+  { text: "( ___ ) is your favorite sport?", ja: "あなたの いちばん すきな スポーツは なんですか？", correct: "What", options: ["What", "Who", "Where", "How"] },
+  { text: "( ___ ) bag is this?", ja: "これは だれの かばんですか？", correct: "Whose", options: ["Whose", "Who", "What", "Where"] },
+  { text: "( ___ ) old are you?", ja: "あなたは なんさいですか？", correct: "How", options: ["How", "What", "Who", "When"] },
+  { text: "( ___ ) do you live?", ja: "あなたは どこに すんでいますか？", correct: "Where", options: ["Where", "What", "Who", "When"] },
+  { text: "( ___ ) is this cap? — It's 500 yen.", ja: "この ぼうしは いくらですか？ — 500えんです。", correct: "How much", options: ["How much", "How many", "What", "Where"] },
+  { text: "I can ( ___ ) fast.", ja: "わたしは はやく はしれます。", correct: "run", options: ["run", "runs", "running", "to run"] },
+  { text: "( ___ ) you swim?", ja: "あなたは およげますか？", correct: "Can", options: ["Can", "Are", "Is", "Does"] },
+  { text: "Let's ( ___ ) to the park.", ja: "こうえんに いきましょう。", correct: "go", options: ["go", "goes", "going", "to go"] },
+  { text: "We ( ___ ) good friends.", ja: "わたしたちは なかよしです。", correct: "are", options: ["are", "is", "am", "be"] },
+  { text: "These ( ___ ) my shoes.", ja: "これらは わたしの くつです。", correct: "are", options: ["are", "is", "am", "do"] },
+  { text: "I have two ( ___ ).", ja: "わたしは いぬを 2ひき かっています。", correct: "dogs", options: ["dogs", "dog", "a dog", "doges"] },
+  { text: "Look ( ___ ) the bird!", ja: "あの とりを みて！", correct: "at", options: ["at", "in", "on", "to"] },
+  { text: "The cat is ( ___ ) the box.", ja: "ねこは はこの なかに います。", correct: "in", options: ["in", "on", "under", "at"] },
+  { text: "Ken is my brother. I like ( ___ ).", ja: "ケンは わたしの おにいさんです。わたしは かれが すきです。", correct: "him", options: ["him", "he", "his", "her"] },
+  { text: "( ___ ) are you? — I'm fine.", ja: "げんきですか？ — げんきです。", correct: "How", options: ["How", "What", "Who", "Where"] },
+  { text: "I ( ___ ) up at seven every day.", ja: "わたしは まいにち 7じに おきます。", correct: "get", options: ["get", "gets", "getting", "got"] },
+  { text: "My sister ( ___ ) English.", ja: "わたしの いもうとは えいごを べんきょうします。", correct: "studies", options: ["studies", "study", "studys", "studying"] },
+  { text: "It is ( ___ ) today.", ja: "きょうは さむいです。", correct: "cold", options: ["cold", "hot", "warm", "cool"] },
+  { text: "I have ( ___ ) orange.", ja: "わたしは オレンジを 1こ もっています。", correct: "an", options: ["an", "a", "two", "many"] },
+  { text: "What ( ___ ) is it today? — It's Monday.", ja: "きょうは なんようびですか？ — げつようびです。", correct: "day", options: ["day", "time", "color", "sport"] }
+);
+
+q2Data.push(
+  { text: "It is snowy.", ja: "ゆき", correctEmoji: "❄️", options: [{emoji:"❄️", text:"ゆき"}, {emoji:"☀️", text:"はれ"}, {emoji:"🌧️", text:"あめ"}] },
+  { text: "I like soccer.", ja: "サッカー", correctEmoji: "⚽", options: [{emoji:"⚽", text:"サッカー"}, {emoji:"🏀", text:"バスケットボール"}, {emoji:"🎾", text:"テニス"}] },
+  { text: "I can play the guitar.", ja: "ギター", correctEmoji: "🎸", options: [{emoji:"🎸", text:"ギター"}, {emoji:"🎹", text:"ピアノ"}, {emoji:"🥁", text:"たいこ"}] },
+  { text: "This is my grandmother.", ja: "おばあさん", correctEmoji: "👵", options: [{emoji:"👵", text:"おばあさん"}, {emoji:"👴", text:"おじいさん"}, {emoji:"👶", text:"あかちゃん"}] },
+  { text: "I want a new bike.", ja: "じてんしゃ", correctEmoji: "🚲", options: [{emoji:"🚲", text:"じてんしゃ"}, {emoji:"🚗", text:"くるま"}, {emoji:"🚌", text:"バス"}] },
+  { text: "Let's go to the zoo.", ja: "どうぶつえん", correctEmoji: "🦓", options: [{emoji:"🦓", text:"どうぶつえん"}, {emoji:"🏥", text:"びょういん"}, {emoji:"🏫", text:"がっこう"}] },
+  { text: "He is a firefighter.", ja: "しょうぼうし", correctEmoji: "🧑‍🚒", options: [{emoji:"🧑‍🚒", text:"しょうぼうし"}, {emoji:"👮", text:"けいさつかん"}, {emoji:"🧑‍🍳", text:"りょうりにん"}] },
+  { text: "I eat bread for breakfast.", ja: "パン", correctEmoji: "🍞", options: [{emoji:"🍞", text:"パン"}, {emoji:"🍚", text:"ごはん"}, {emoji:"🥞", text:"パンケーキ"}] },
+  { text: "My favorite color is purple.", ja: "むらさき", correctEmoji: "🟣", options: [{emoji:"🟣", text:"むらさき"}, {emoji:"🟢", text:"みどり"}, {emoji:"🟡", text:"きいろ"}] },
+  { text: "I have three pencils.", ja: "3ぼん", correctEmoji: "3️⃣", options: [{emoji:"3️⃣", text:"3ぼん"}, {emoji:"2️⃣", text:"2ほん"}, {emoji:"5️⃣", text:"5ほん"}] },
+  { text: "Look at the moon.", ja: "つき", correctEmoji: "🌙", options: [{emoji:"🌙", text:"つき"}, {emoji:"⭐", text:"ほし"}, {emoji:"☀️", text:"たいよう"}] },
+  { text: "The baby is sleeping.", ja: "ねている", correctEmoji: "😴", options: [{emoji:"😴", text:"ねている"}, {emoji:"🏃", text:"はしっている"}, {emoji:"😋", text:"たべている"}] },
+  { text: "She is swimming.", ja: "およいでいる", correctEmoji: "🏊", options: [{emoji:"🏊", text:"およいでいる"}, {emoji:"🚶", text:"あるいている"}, {emoji:"💃", text:"おどっている"}] },
+  { text: "I want ice cream.", ja: "アイスクリーム", correctEmoji: "🍨", options: [{emoji:"🍨", text:"アイスクリーム"}, {emoji:"🍰", text:"ケーキ"}, {emoji:"🍩", text:"ドーナツ"}] },
+  { text: "I go to school by train.", ja: "でんしゃ", correctEmoji: "🚃", options: [{emoji:"🚃", text:"でんしゃ"}, {emoji:"🚲", text:"じてんしゃ"}, {emoji:"🚶", text:"あるいて"}] },
+  { text: "I like summer.", ja: "なつ", correctEmoji: "🌻", options: [{emoji:"🌻", text:"なつ"}, {emoji:"⛄", text:"ふゆ"}, {emoji:"🍁", text:"あき"}] },
+  { text: "Brush your teeth.", ja: "はを みがく", correctEmoji: "🪥", options: [{emoji:"🪥", text:"はを みがく"}, {emoji:"🧼", text:"てを あらう"}, {emoji:"🛁", text:"おふろに はいる"}] },
+  { text: "It's eight o'clock.", ja: "8じ", correctEmoji: "🕗", options: [{emoji:"🕗", text:"8じ"}, {emoji:"🕒", text:"3じ"}, {emoji:"🕖", text:"7じ"}] },
+  { text: "My cat is black.", ja: "くろ", correctEmoji: "⚫", options: [{emoji:"⚫", text:"くろ"}, {emoji:"⚪", text:"しろ"}, {emoji:"🟤", text:"ちゃいろ"}] },
+  { text: "I play table tennis.", ja: "たっきゅう", correctEmoji: "🏓", options: [{emoji:"🏓", text:"たっきゅう"}, {emoji:"🏸", text:"バドミントン"}, {emoji:"🎾", text:"テニス"}] },
+  { text: "I'm hungry.", ja: "おなかが すいた", correctEmoji: "🤤", options: [{emoji:"🤤", text:"おなかが すいた"}, {emoji:"🥱", text:"ねむい"}, {emoji:"😠", text:"おこっている"}] },
+  { text: "Open the window, please.", ja: "まど", correctEmoji: "🪟", options: [{emoji:"🪟", text:"まど"}, {emoji:"🚪", text:"ドア"}, {emoji:"📦", text:"はこ"}] },
+  { text: "My father is a cook.", ja: "りょうりにん", correctEmoji: "🧑‍🍳", options: [{emoji:"🧑‍🍳", text:"りょうりにん"}, {emoji:"🧑‍✈️", text:"パイロット"}, {emoji:"🧑‍🌾", text:"のうか"}] },
+  { text: "I see a rainbow.", ja: "にじ", correctEmoji: "🌈", options: [{emoji:"🌈", text:"にじ"}, {emoji:"☁️", text:"くも"}, {emoji:"⛰️", text:"やま"}] },
+  { text: "Let's play cards.", ja: "カード", correctEmoji: "🃏", options: [{emoji:"🃏", text:"カード"}, {emoji:"🧩", text:"パズル"}, {emoji:"🎮", text:"ゲーム"}] }
+);
+
+q3Data.push(
+  { ja: "いぬを なんびき かっていますか？", words: ["How", "many", "dogs", "do", "you", "have?"] },
+  { ja: "なにいろが すきですか？", words: ["What", "color", "do", "you", "like?"] },
+  { ja: "わたしは テレビを みています。", words: ["I", "am", "watching", "TV."] },
+  { ja: "かのじょは ピアノを ひきます。", words: ["She", "plays", "the", "piano."] },
+  { ja: "どこに すんでいますか？", words: ["Where", "do", "you", "live?"] },
+  { ja: "わたしは とうきょうに すんでいます。", words: ["I", "live", "in", "Tokyo."] },
+  { ja: "なんじに おきますか？", words: ["What", "time", "do", "you", "get", "up?"] },
+  { ja: "ここで はしらないで。", words: ["Don't", "run", "here."] },
+  { ja: "おひるごはんを たべましょう。", words: ["Let's", "eat", "lunch."] },
+  { ja: "わたしの たんじょうびは 6がつです。", words: ["My", "birthday", "is", "in", "June."] },
+  { ja: "テニスが できますか？", words: ["Can", "you", "play", "tennis?"] },
+  { ja: "わたしは およげません。", words: ["I", "can't", "swim."] },
+  { ja: "なんさいですか？", words: ["How", "old", "are", "you?"] },
+  { ja: "わたしは 7さいです。", words: ["I", "am", "seven", "years", "old."] },
+  { ja: "これは だれの ペンですか？", words: ["Whose", "pen", "is", "this?"] },
+  { ja: "かれは カナダの しゅっしんです。", words: ["He", "is", "from", "Canada."] },
+  { ja: "いちばん すきな たべものは なんですか？", words: ["What", "is", "your", "favorite", "food?"] },
+  { ja: "わたしたちは バスで がっこうに いきます。", words: ["We", "go", "to", "school", "by", "bus."] },
+  { ja: "ドアを あけてください。", words: ["Please", "open", "the", "door."] },
+  { ja: "わたしは いぬが とても すきです。", words: ["I", "like", "dogs", "very", "much."] },
+  { ja: "きょうは はれです。", words: ["It", "is", "sunny", "today."] },
+  { ja: "ねこは どこに いますか？", words: ["Where", "is", "the", "cat?"] },
+  { ja: "いすの したに います。", words: ["It's", "under", "the", "chair."] },
+  { ja: "いもうとは ケーキが すきです。", words: ["My", "sister", "likes", "cake."] },
+  { ja: "ペットを かっていますか？", words: ["Do", "you", "have", "a", "pet?"] },
+  { ja: "きょうは なんようびですか？", words: ["What", "day", "is", "it", "today?"] }
+);
+
+q4Data.push(
+  { text: "A: What color do you like?", ja: "なにいろが すき？", correct: "I like blue.", options: ["I like blue.", "Yes, I do.", "It's a pen.", "I'm ten."] },
+  { text: "A: How many cats do you have?", ja: "ねこを なんびき かってる？", correct: "I have two.", options: ["I have two.", "I'm two.", "Yes, I do.", "It's a cat."] },
+  { text: "A: Where is my cap?", ja: "わたしの ぼうしは どこ？", correct: "It's on the bed.", options: ["It's on the bed.", "It's blue.", "Yes, it is.", "I like caps."] },
+  { text: "A: Who is that girl?", ja: "あの おんなのこは だれ？", correct: "She is Yumi.", options: ["She is Yumi.", "He is Ken.", "It is a girl.", "Yes, she is."] },
+  { text: "A: What sport do you like?", ja: "なんの スポーツが すき？", correct: "I like soccer.", options: ["I like soccer.", "I'm fine.", "Yes, I can.", "It's Monday."] },
+  { text: "A: Is it sunny today?", ja: "きょうは はれ？", correct: "Yes, it is.", options: ["Yes, it is.", "Yes, I am.", "Yes, I do.", "Yes, I can."] },
+  { text: "A: Do you like math?", ja: "さんすうは すき？", correct: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, it is.", "No, I'm not."] },
+  { text: "A: Can your father cook?", ja: "おとうさんは りょうりが できる？", correct: "Yes, he can.", options: ["Yes, he can.", "Yes, he is.", "Yes, I can.", "Yes, he does."] },
+  { text: "A: Are you hungry?", ja: "おなか すいた？", correct: "Yes, I am.", options: ["Yes, I am.", "Yes, I do.", "Yes, it is.", "Yes, I can."] },
+  { text: "A: Whose cap is this?", ja: "これは だれの ぼうし？", correct: "It's my brother's.", options: ["It's my brother's.", "It's red.", "Yes, it is.", "I like caps."] },
+  { text: "A: How do you go to school?", ja: "どうやって がっこうに いくの？", correct: "By bike.", options: ["By bike.", "At eight.", "In April.", "Yes, I do."] },
+  { text: "A: When do you play soccer?", ja: "いつ サッカーを するの？", correct: "On Sundays.", options: ["On Sundays.", "In the park.", "With my friends.", "Yes, I do."] },
+  { text: "A: Where do you play soccer?", ja: "どこで サッカーを するの？", correct: "In the park.", options: ["In the park.", "On Sundays.", "Every day.", "Yes, I do."] },
+  { text: "A: What are you doing?", ja: "なにを しているの？", correct: "I'm reading a book.", options: ["I'm reading a book.", "I'm ten.", "It's a book.", "Yes, I am."] },
+  { text: "A: How much is this pen?", ja: "この ペンは いくら？", correct: "It's 100 yen.", options: ["It's 100 yen.", "It's blue.", "I have one.", "It's mine."] },
+  { text: "A: Let's play tennis.", ja: "テニスを しよう。", correct: "Sorry, I'm busy.", options: ["Sorry, I'm busy.", "You're welcome.", "Nice to meet you.", "I'm ten."] },
+  { text: "A: Good night.", ja: "おやすみ。", correct: "Good night.", options: ["Good night.", "Good morning.", "Good afternoon.", "You're welcome."] },
+  { text: "A: Excuse me. Are you Mr. Brown?", ja: "すみません、ブラウンさんですか？", correct: "Yes, I am.", options: ["Yes, I am.", "Yes, he is.", "Yes, I do.", "Yes, it is."] },
+  { text: "A: What do you want for your birthday?", ja: "たんじょうびに なにが ほしい？", correct: "A new bike.", options: ["A new bike.", "On May 5th.", "I'm eight.", "Yes, I do."] },
+  { text: "A: What's your favorite animal?", ja: "いちばん すきな どうぶつは？", correct: "Pandas.", options: ["Pandas.", "Blue.", "Soccer.", "Pizza."] },
+  { text: "A: Which do you like, dogs or cats?", ja: "いぬと ねこ、どっちが すき？", correct: "I like cats.", options: ["I like cats.", "Yes, I do.", "No, I don't.", "It's a dog."] },
+  { text: "A: Do you have any brothers?", ja: "きょうだいは いる？", correct: "Yes, I have one.", options: ["Yes, I have one.", "Yes, I am.", "Yes, it is.", "I'm a boy."] },
+  { text: "A: See you.", ja: "またね。", correct: "Bye.", options: ["Bye.", "Hello.", "Thank you.", "Good morning."] },
+  { text: "A: Can I use your pen?", ja: "ペンを つかっても いい？", correct: "Sure.", options: ["Sure.", "You're welcome.", "I'm fine.", "Good job."] },
+  { text: "A: What time do you get up?", ja: "なんじに おきるの？", correct: "At six thirty.", options: ["At six thirty.", "In the morning.", "On Monday.", "Yes, I do."] }
+);
   function getPokemonImageUrl(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`; }
 
 let isWordMode = true; 
@@ -1120,7 +1830,7 @@ function renderWordModeQuestion(container, qData, qType) {
     document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
     createWordPictureOptions(qData, container.querySelector('#word-opts')); setTimeout(() => speakCuteVoice(qData.en), 500);
   } else if (qType === 2) { 
-    container.innerHTML = `<div class="q-head"><p class="q-title">マイクを おして えいごで いってみよう！</p><button class="voice-btn" id="word-voice-btn">${ICON.speaker}</button></div><div class="question-emoji">${qData.emoji}</div><div class="question-word big" style="margin-top:4px;">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">${ICON.mic}</button><p id="mic-hint" style="min-height:1.5em; font-weight:800; color:var(--ink-soft); margin:6px 0 0;"></p><div style="margin-top:14px; padding-top:12px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとが OKを だす</button></div>`;
+    container.innerHTML = `<div class="q-head"><p class="q-title">マイクを おして えいごで いってみよう！</p><button class="voice-btn" id="word-voice-btn">${ICON.speaker}</button></div>${qData.emoji ? `<div class="question-emoji">${qData.emoji}</div>` : ''}<div class="question-word big" style="margin-top:4px;">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">${ICON.mic}</button><p id="mic-hint" style="min-height:1.5em; font-weight:800; color:var(--ink-soft); margin:6px 0 0;"></p><div style="margin-top:14px; padding-top:12px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとが OKを だす</button></div>`;
     document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
     document.getElementById('parent-ok-btn').onclick = () => checkAnswer(true, qData.en, qData.ja);
     setTimeout(() => { currentHint = () => { speakEnglishVoice(qData.en); buddySay(`「${qData.en}」って いってみて！`, 3500); return 'said'; }; }, 0);
@@ -1135,7 +1845,7 @@ function renderWordModeQuestion(container, qData, qType) {
         hint.innerText = 'きいてるよ…';
         let gotResult = false;
         const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const numWords = { one: '1', two: '2', three: '3', four: '4', five: '5' };
+        const numWords = { zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10', eleven: '11', twelve: '12', thirteen: '13', fourteen: '14', fifteen: '15', sixteen: '16', seventeen: '17', eighteen: '18', nineteen: '19', twenty: '20', thirty: '30', forty: '40', fifty: '50', sixty: '60', seventy: '70', eighty: '80', ninety: '90', onehundred: '100', tv: 'tv' };
         const targets = [norm(qData.en)];
         if (numWords[targets[0]]) targets.push(numWords[targets[0]]);
         recognition.onresult = (e) => {
@@ -1157,22 +1867,36 @@ function renderWordModeQuestion(container, qData, qType) {
     document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
     createWordPictureOptions(qData, container.querySelector('#word-opts')); setTimeout(() => speakCuteVoice(qData.en), 500);
   } else { 
-    container.innerHTML = `<p class="q-title" style="text-align:center;">にほんごを みて えいごを えらぼう！</p><div class="question-emoji">${qData.emoji}</div><div class="question-word" style="margin-top:4px;">${qData.ja}</div><div class="options-grid" id="word-opts"></div>`;
+    container.innerHTML = `<p class="q-title" style="text-align:center;">にほんごを みて えいごを えらぼう！</p>${qData.emoji ? `<div class="question-emoji">${qData.emoji}</div>` : ''}<div class="question-word" style="margin-top:4px;">${qData.ja}</div><div class="options-grid" id="word-opts"></div>`;
     createWordTextOptions(qData, container.querySelector('#word-opts'));
   }
 }
 
+// まちがいの せんたくしは、なるべく おなじ テーマから えらぶ（いみ・え・つづりが かぶらないように）
+function pickDistractors(correct, n) {
+  const ok = w => w.en.toLowerCase() !== correct.en.toLowerCase() && w.ja !== correct.ja && (!w.emoji || w.emoji !== correct.emoji);
+  const same = wordData.filter(w => w.cat === correct.cat && ok(w)).sort(() => 0.5 - Math.random());
+  const others = wordData.filter(w => w.cat !== correct.cat && ok(w)).sort(() => 0.5 - Math.random());
+  const picked = [];
+  for (const w of same.concat(others)) {
+    if (picked.length >= n) break;
+    if (picked.some(p => p.ja === w.ja || p.en.toLowerCase() === w.en.toLowerCase() || (w.emoji && p.emoji === w.emoji))) continue;
+    picked.push(w);
+  }
+  return picked;
+}
 function createWordPictureOptions(correctData, container) {
-  const options = [correctData, ...wordData.filter(w => w.en !== correctData.en).sort(() => 0.5 - Math.random()).slice(0, 2)].sort(() => 0.5 - Math.random());
+  const options = [correctData, ...pickDistractors(correctData, 2)].sort(() => 0.5 - Math.random());
+  const allPics = options.every(o => o.emoji); // ぜんぶに えが あるときだけ えを だす
   options.forEach(opt => {
-    const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span class="opt-emoji">${opt.emoji}</span><span>${opt.ja}</span>`;
+    const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = allPics ? `<span class="opt-emoji">${opt.emoji}</span><span>${opt.ja}</span>` : `<span>${opt.ja}</span>`;
     if (opt.en === correctData.en) btn.dataset.correct = '1';
     btn.onclick = () => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja);
     container.appendChild(btn);
   });
 }
 function createWordTextOptions(correctData, container) {
-  const options = [correctData, ...wordData.filter(w => w.en !== correctData.en).sort(() => 0.5 - Math.random()).slice(0, 2)].sort(() => 0.5 - Math.random());
+  const options = [correctData, ...pickDistractors(correctData, 2)].sort(() => 0.5 - Math.random());
   options.forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span class="opt-en">${opt.en}</span>`;
     if (opt.en === correctData.en) btn.dataset.correct = '1';
@@ -1337,6 +2061,47 @@ function checkAnswer(isCorrect, answerEn, answerJa) {
     if (isCorrect) { currentQIndex++; showNextQuestion(); }
   }, 2500);
 }
+
+// ==== EMOJI-3D START ====
+// もんだいの なかの えもじを、どの スマホでも おなじに みえる 3Dの え（Microsoft Fluent Emoji, MIT ライセンス）に おきかえる
+const EMOJI_BASE = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/';
+const EMOJI_IMG = {"🧑‍⚕️": "assets/Health worker/Default/3D/health_worker_3d_default.png","🧑‍✈️": "assets/Pilot/Default/3D/pilot_3d_default.png","5️⃣": "assets/Keycap 5/3D/keycap_5_3d.png","🐕‍🦺": "assets/Service dog/3D/service_dog_3d.png","🧑‍🍳": "assets/Cook/Default/3D/cook_3d_default.png","🧑‍⚕": "assets/Health worker/Default/3D/health_worker_3d_default.png","1️⃣": "assets/Keycap 1/3D/keycap_1_3d.png","7️⃣": "assets/Keycap 7/3D/keycap_7_3d.png","🧑‍🎓": "assets/Student/Default/3D/student_3d_default.png","🧑‍🌾": "assets/Farmer/Default/3D/farmer_3d_default.png","2️⃣": "assets/Keycap 2/3D/keycap_2_3d.png","🧑‍✈": "assets/Pilot/Default/3D/pilot_3d_default.png","6️⃣": "assets/Keycap 6/3D/keycap_6_3d.png","🧑‍🚀": "assets/Astronaut/Default/3D/astronaut_3d_default.png","9️⃣": "assets/Keycap 9/3D/keycap_9_3d.png","4️⃣": "assets/Keycap 4/3D/keycap_4_3d.png","🧑‍🎤": "assets/Singer/Default/3D/singer_3d_default.png","🧑‍🎨": "assets/Artist/Default/3D/artist_3d_default.png","8️⃣": "assets/Keycap 8/3D/keycap_8_3d.png","🧑‍🚒": "assets/Firefighter/Default/3D/firefighter_3d_default.png","3️⃣": "assets/Keycap 3/3D/keycap_3_3d.png","0️⃣": "assets/Keycap 0/3D/keycap_0_3d.png","🧑‍🏫": "assets/Teacher/Default/3D/teacher_3d_default.png","👁️": "assets/Eye/3D/eye_3d.png","🛍️": "assets/Shopping bags/3D/shopping_bags_3d.png","⚕️": "assets/Medical symbol/3D/medical_symbol_3d.png","🏕️": "assets/Camping/3D/camping_3d.png","🛏️": "assets/Bed/3D/bed_3d.png","🏖️": "assets/Beach with umbrella/3D/beach_with_umbrella_3d.png","✈️": "assets/Airplane/3D/airplane_3d.png","🏘️": "assets/Houses/3D/houses_3d.png","🖐️": "assets/Hand with fingers splayed/Default/3D/hand_with_fingers_splayed_3d_default.png","➡️": "assets/Right arrow/3D/right_arrow_3d.png","⬅️": "assets/Left arrow/3D/left_arrow_3d.png","🏙️": "assets/Cityscape/3D/cityscape_3d.png","🕯️": "assets/Candle/3D/candle_3d.png","⏱️": "assets/Stopwatch/3D/stopwatch_3d.png","🖼️": "assets/Framed picture/3D/framed_picture_3d.png","✍️": "assets/Writing hand/Default/3D/writing_hand_3d_default.png","❄️": "assets/Snowflake/3D/snowflake_3d.png","🗣️": "assets/Speaking head/3D/speaking_head_3d.png","🕊️": "assets/Dove/3D/dove_3d.png","✂️": "assets/Scissors/3D/scissors_3d.png","🏞️": "assets/National park/3D/national_park_3d.png","🕰️": "assets/Mantelpiece clock/3D/mantelpiece_clock_3d.png","☃️": "assets/Snowman/3D/snowman_3d.png","🗺️": "assets/World map/3D/world_map_3d.png","⛰️": "assets/Mountain/3D/mountain_3d.png","🌤️": "assets/Sun behind small cloud/3D/sun_behind_small_cloud_3d.png","⛩️": "assets/Shinto shrine/3D/shinto_shrine_3d.png","⛷️": "assets/Skier/3D/skier_3d.png","⛸️": "assets/Ice skate/3D/ice_skate_3d.png","☝️": "assets/Index pointing up/Default/3D/index_pointing_up_3d_default.png","🌧️": "assets/Cloud with rain/3D/cloud_with_rain_3d.png","🏝️": "assets/Desert island/3D/desert_island_3d.png","🕷️": "assets/Spider/3D/spider_3d.png","🏛️": "assets/Classical building/3D/classical_building_3d.png","🍽️": "assets/Fork and knife with plate/3D/fork_and_knife_with_plate_3d.png","🏋️": "assets/Person lifting weights/Default/3D/person_lifting_weights_3d_default.png","✏️": "assets/Pencil/3D/pencil_3d.png","🏎️": "assets/Racing car/3D/racing_car_3d.png","🛋️": "assets/Couch and lamp/3D/couch_and_lamp_3d.png","❤️": "assets/Red heart/3D/red_heart_3d.png","☂️": "assets/Umbrella/3D/umbrella_3d.png","🖍️": "assets/Crayon/3D/crayon_3d.png","☁️": "assets/Cloud/3D/cloud_3d.png","🖊️": "assets/Pen/3D/pen_3d.png","🏟️": "assets/Stadium/3D/stadium_3d.png","✉️": "assets/Envelope/3D/envelope_3d.png","🌬️": "assets/Wind face/3D/wind_face_3d.png","🛠️": "assets/Hammer and wrench/3D/hammer_and_wrench_3d.png","☀️": "assets/Sun/3D/sun_3d.png","👎": "assets/Thumbs down/Default/3D/thumbs_down_3d_default.png","🕗": "assets/Eight oclock/3D/eight_oclock_3d.png","🍌": "assets/Banana/3D/banana_3d.png","🍎": "assets/Red apple/3D/red_apple_3d.png","👁": "assets/Eye/3D/eye_3d.png","🛍": "assets/Shopping bags/3D/shopping_bags_3d.png","🐢": "assets/Turtle/3D/turtle_3d.png","⛄": "assets/Snowman without snow/3D/snowman_without_snow_3d.png","🛒": "assets/Shopping cart/3D/shopping_cart_3d.png","⚕": "assets/Medical symbol/3D/medical_symbol_3d.png","📖": "assets/Open book/3D/open_book_3d.png","⚽": "assets/Soccer ball/3D/soccer_ball_3d.png","🎸": "assets/Guitar/3D/guitar_3d.png","🍓": "assets/Strawberry/3D/strawberry_3d.png","🃏": "assets/Joker/3D/joker_3d.png","🦁": "assets/Lion/3D/lion_3d.png","🏉": "assets/Rugby football/3D/rugby_football_3d.png","🐴": "assets/Horse face/3D/horse_face_3d.png","🚢": "assets/Ship/3D/ship_3d.png","🍕": "assets/Pizza/3D/pizza_3d.png","🥩": "assets/Cut of meat/3D/cut_of_meat_3d.png","🦉": "assets/Owl/3D/owl_3d.png","🧦": "assets/Socks/3D/socks_3d.png","🏸": "assets/Badminton/3D/badminton_3d.png","🏕": "assets/Camping/3D/camping_3d.png","🛏": "assets/Bed/3D/bed_3d.png","🧅": "assets/Onion/3D/onion_3d.png","🚃": "assets/Railway car/3D/railway_car_3d.png","🏖": "assets/Beach with umbrella/3D/beach_with_umbrella_3d.png","🥔": "assets/Potato/3D/potato_3d.png","😩": "assets/Weary face/3D/weary_face_3d.png","🍜": "assets/Steaming bowl/3D/steaming_bowl_3d.png","👥": "assets/Busts in silhouette/3D/busts_in_silhouette_3d.png","💡": "assets/Light bulb/3D/light_bulb_3d.png","📅": "assets/Calendar/3D/calendar_3d.png","🥪": "assets/Sandwich/3D/sandwich_3d.png","👕": "assets/T-shirt/3D/t-shirt_3d.png","✈": "assets/Airplane/3D/airplane_3d.png","⛳": "assets/Flag in hole/3D/flag_in_hole_3d.png","🏘": "assets/Houses/3D/houses_3d.png","🍣": "assets/Sushi/3D/sushi_3d.png","🛑": "assets/Stop sign/3D/stop_sign_3d.png","🐹": "assets/Hamster/3D/hamster_3d.png","👍": "assets/Thumbs up/Default/3D/thumbs_up_3d_default.png","🤾": "assets/Person playing handball/Default/3D/person_playing_handball_3d_default.png","🆕": "assets/New button/3D/new_button_3d.png","🖐": "assets/Hand with fingers splayed/Default/3D/hand_with_fingers_splayed_3d_default.png","🔪": "assets/Kitchen knife/3D/kitchen_knife_3d.png","🏐": "assets/Volleyball/3D/volleyball_3d.png","➡": "assets/Right arrow/3D/right_arrow_3d.png","⬅": "assets/Left arrow/3D/left_arrow_3d.png","🪟": "assets/Window/3D/window_3d.png","🏪": "assets/Convenience store/3D/convenience_store_3d.png","🐶": "assets/Dog face/3D/dog_face_3d.png","🧩": "assets/Puzzle piece/3D/puzzle_piece_3d.png","🧤": "assets/Gloves/3D/gloves_3d.png","🥚": "assets/Egg/3D/egg_3d.png","🎫": "assets/Ticket/3D/ticket_3d.png","👵": "assets/Old woman/Default/3D/old_woman_3d_default.png","🎁": "assets/Wrapped gift/3D/wrapped_gift_3d.png","🌅": "assets/Sunrise/3D/sunrise_3d.png","🌽": "assets/Ear of corn/3D/ear_of_corn_3d.png","🐠": "assets/Tropical fish/3D/tropical_fish_3d.png","😴": "assets/Sleeping face/3D/sleeping_face_3d.png","💪": "assets/Flexed biceps/Default/3D/flexed_biceps_3d_default.png","🥋": "assets/Martial arts uniform/3D/martial_arts_uniform_3d.png","🍬": "assets/Candy/3D/candy_3d.png","🥱": "assets/Yawning face/3D/yawning_face_3d.png","🔵": "assets/Blue circle/3D/blue_circle_3d.png","🚜": "assets/Tractor/3D/tractor_3d.png","🎂": "assets/Birthday cake/3D/birthday_cake_3d.png","🐬": "assets/Dolphin/3D/dolphin_3d.png","🏙": "assets/Cityscape/3D/cityscape_3d.png","🧑": "assets/Person/Default/3D/person_3d_default.png","🕯": "assets/Candle/3D/candle_3d.png","🥄": "assets/Spoon/3D/spoon_3d.png","🚶": "assets/Person walking/Default/3D/person_walking_3d_default.png","🍖": "assets/Meat on bone/3D/meat_on_bone_3d.png","🐼": "assets/Panda/3D/panda_3d.png","🔍": "assets/Magnifying glass tilted left/3D/magnifying_glass_tilted_left_3d.png","👩": "assets/Woman/Default/3D/woman_3d_default.png","🐯": "assets/Tiger face/3D/tiger_face_3d.png","🍰": "assets/Shortcake/3D/shortcake_3d.png","🦶": "assets/Foot/Default/3D/foot_3d_default.png","😊": "assets/Smiling face with smiling eyes/3D/smiling_face_with_smiling_eyes_3d.png","📄": "assets/Page facing up/3D/page_facing_up_3d.png","🦷": "assets/Tooth/3D/tooth_3d.png","🦓": "assets/Zebra/3D/zebra_3d.png","⌛": "assets/Hourglass done/3D/hourglass_done_3d.png","🎡": "assets/Ferris wheel/3D/ferris_wheel_3d.png","🍛": "assets/Curry rice/3D/curry_rice_3d.png","🧥": "assets/Coat/3D/coat_3d.png","👓": "assets/Glasses/3D/glasses_3d.png","⏱": "assets/Stopwatch/3D/stopwatch_3d.png","👋": "assets/Waving hand/Default/3D/waving_hand_3d_default.png","🚁": "assets/Helicopter/3D/helicopter_3d.png","👦": "assets/Boy/Default/3D/boy_3d_default.png","🥣": "assets/Bowl with spoon/3D/bowl_with_spoon_3d.png","🐘": "assets/Elephant/3D/elephant_3d.png","🏓": "assets/Ping pong/3D/ping_pong_3d.png","🐨": "assets/Koala/3D/koala_3d.png","🔑": "assets/Key/3D/key_3d.png","🍄": "assets/Mushroom/3D/mushroom_3d.png","🎉": "assets/Party popper/3D/party_popper_3d.png","🌸": "assets/Cherry blossom/3D/cherry_blossom_3d.png","🧢": "assets/Billed cap/3D/billed_cap_3d.png","🚒": "assets/Fire engine/3D/fire_engine_3d.png","🍔": "assets/Hamburger/3D/hamburger_3d.png","🖼": "assets/Framed picture/3D/framed_picture_3d.png","🔢": "assets/Input numbers/3D/input_numbers_3d.png","🎮": "assets/Video game/3D/video_game_3d.png","🏅": "assets/Sports medal/3D/sports_medal_3d.png","🍁": "assets/Maple leaf/3D/maple_leaf_3d.png","🐸": "assets/Frog/3D/frog_3d.png","🎹": "assets/Musical keyboard/3D/musical_keyboard_3d.png","🐔": "assets/Chicken/3D/chicken_3d.png","🔴": "assets/Red circle/3D/red_circle_3d.png","😄": "assets/Grinning face with smiling eyes/3D/grinning_face_with_smiling_eyes_3d.png","🛫": "assets/Airplane departure/3D/airplane_departure_3d.png","🎃": "assets/Jack-o-lantern/3D/jack-o-lantern_3d.png","🤔": "assets/Thinking face/3D/thinking_face_3d.png","😎": "assets/Smiling face with sunglasses/3D/smiling_face_with_sunglasses_3d.png","🪁": "assets/Kite/3D/kite_3d.png","🚪": "assets/Door/3D/door_3d.png","🍩": "assets/Doughnut/3D/doughnut_3d.png","🎨": "assets/Artist palette/3D/artist_palette_3d.png","🥶": "assets/Cold face/3D/cold_face_3d.png","☕": "assets/Hot beverage/3D/hot_beverage_3d.png","✍": "assets/Writing hand/Default/3D/writing_hand_3d_default.png","🚑": "assets/Ambulance/3D/ambulance_3d.png","👃": "assets/Nose/Default/3D/nose_3d_default.png","🤸": "assets/Person cartwheeling/Default/3D/person_cartwheeling_3d_default.png","🍭": "assets/Lollipop/3D/lollipop_3d.png","🏀": "assets/Basketball/3D/basketball_3d.png","🌟": "assets/Glowing star/3D/glowing_star_3d.png","❄": "assets/Snowflake/3D/snowflake_3d.png","🍐": "assets/Pear/3D/pear_3d.png","👤": "assets/Bust in silhouette/3D/bust_in_silhouette_3d.png","📓": "assets/Notebook/3D/notebook_3d.png","🥕": "assets/Carrot/3D/carrot_3d.png","🗣": "assets/Speaking head/3D/speaking_head_3d.png","🪥": "assets/Toothbrush/3D/toothbrush_3d.png","🍝": "assets/Spaghetti/3D/spaghetti_3d.png","🦋": "assets/Butterfly/3D/butterfly_3d.png","🧍": "assets/Person standing/Default/3D/person_standing_3d_default.png","🎓": "assets/Graduation cap/3D/graduation_cap_3d.png","🟢": "assets/Green circle/3D/green_circle_3d.png","🟤": "assets/Brown circle/3D/brown_circle_3d.png","🚇": "assets/Metro/3D/metro_3d.png","✋": "assets/Raised hand/Default/3D/raised_hand_3d_default.png","💃": "assets/Woman dancing/Default/3D/woman_dancing_3d_default.png","🙇": "assets/Person bowing/Default/3D/person_bowing_3d_default.png","💧": "assets/Droplet/3D/droplet_3d.png","🌳": "assets/Deciduous tree/3D/deciduous_tree_3d.png","🐜": "assets/Ant/3D/ant_3d.png","🍉": "assets/Watermelon/3D/watermelon_3d.png","🤤": "assets/Drooling face/3D/drooling_face_3d.png","🐝": "assets/Honeybee/3D/honeybee_3d.png","🥐": "assets/Croissant/3D/croissant_3d.png","💰": "assets/Money bag/3D/money_bag_3d.png","🕊": "assets/Dove/3D/dove_3d.png","🐵": "assets/Monkey face/3D/monkey_face_3d.png","🚉": "assets/Station/3D/station_3d.png","🥉": "assets/3rd place medal/3D/3rd_place_medal_3d.png","🟣": "assets/Purple circle/3D/purple_circle_3d.png","🥒": "assets/Cucumber/3D/cucumber_3d.png","🌊": "assets/Water wave/3D/water_wave_3d.png","🚕": "assets/Taxi/3D/taxi_3d.png","📰": "assets/Newspaper/3D/newspaper_3d.png","🚓": "assets/Police car/3D/police_car_3d.png","🌲": "assets/Evergreen tree/3D/evergreen_tree_3d.png","👀": "assets/Eyes/3D/eyes_3d.png","✂": "assets/Scissors/3D/scissors_3d.png","🏁": "assets/Chequered flag/3D/chequered_flag_3d.png","🏞": "assets/National park/3D/national_park_3d.png","🐙": "assets/Octopus/3D/octopus_3d.png","🔟": "assets/Keycap 10/3D/keycap_10_3d.png","💇": "assets/Person getting haircut/Default/3D/person_getting_haircut_3d_default.png","🍨": "assets/Ice cream/3D/ice_cream_3d.png","🎀": "assets/Ribbon/3D/ribbon_3d.png","😋": "assets/Face savoring food/3D/face_savoring_food_3d.png","🌏": "assets/Globe showing asia-australia/3D/globe_showing_asia-australia_3d.png","🍇": "assets/Grapes/3D/grapes_3d.png","🚌": "assets/Bus/3D/bus_3d.png","🍱": "assets/Bento box/3D/bento_box_3d.png","⛲": "assets/Fountain/3D/fountain_3d.png","🎻": "assets/Violin/3D/violin_3d.png","🐱": "assets/Cat face/3D/cat_face_3d.png","🐑": "assets/Ewe/3D/ewe_3d.png","🕰": "assets/Mantelpiece clock/3D/mantelpiece_clock_3d.png","🐧": "assets/Penguin/3D/penguin_3d.png","🎒": "assets/Backpack/3D/backpack_3d.png","🐳": "assets/Spouting whale/3D/spouting_whale_3d.png","⚾": "assets/Baseball/3D/baseball_3d.png","🧒": "assets/Child/Default/3D/child_3d_default.png","👄": "assets/Mouth/3D/mouth_3d.png","❓": "assets/Red question mark/3D/red_question_mark_3d.png","⭕": "assets/Hollow red circle/3D/hollow_red_circle_3d.png","🍞": "assets/Bread/3D/bread_3d.png","🏣": "assets/Japanese post office/3D/japanese_post_office_3d.png","☃": "assets/Snowman/3D/snowman_3d.png","🛁": "assets/Bathtub/3D/bathtub_3d.png","🏨": "assets/Hotel/3D/hotel_3d.png","🥬": "assets/Leafy green/3D/leafy_green_3d.png","👴": "assets/Old man/Default/3D/old_man_3d_default.png","🍙": "assets/Rice ball/3D/rice_ball_3d.png","🧹": "assets/Broom/3D/broom_3d.png","👧": "assets/Girl/Default/3D/girl_3d_default.png","🦀": "assets/Crab/3D/crab_3d.png","🍑": "assets/Peach/3D/peach_3d.png","🍿": "assets/Popcorn/3D/popcorn_3d.png","⏰": "assets/Alarm clock/3D/alarm_clock_3d.png","🐾": "assets/Paw prints/3D/paw_prints_3d.png","🌍": "assets/Globe showing europe-africa/3D/globe_showing_europe-africa_3d.png","🚀": "assets/Rocket/3D/rocket_3d.png","🗺": "assets/World map/3D/world_map_3d.png","⛰": "assets/Mountain/3D/mountain_3d.png","📕": "assets/Closed book/3D/closed_book_3d.png","👮": "assets/Police officer/Default/3D/police_officer_3d_default.png","👶": "assets/Baby/Default/3D/baby_3d_default.png","🌾": "assets/Sheaf of rice/3D/sheaf_of_rice_3d.png","🌷": "assets/Tulip/3D/tulip_3d.png","🌤": "assets/Sun behind small cloud/3D/sun_behind_small_cloud_3d.png","🔬": "assets/Microscope/3D/microscope_3d.png","⛩": "assets/Shinto shrine/3D/shinto_shrine_3d.png","🏥": "assets/Hospital/3D/hospital_3d.png","🎣": "assets/Fishing pole/3D/fishing_pole_3d.png","🌻": "assets/Sunflower/3D/sunflower_3d.png","🎈": "assets/Balloon/3D/balloon_3d.png","⏳": "assets/Hourglass not done/3D/hourglass_not_done_3d.png","⛷": "assets/Skier/3D/skier_3d.png","💬": "assets/Speech balloon/3D/speech_balloon_3d.png","🌙": "assets/Crescent moon/3D/crescent_moon_3d.png","🥛": "assets/Glass of milk/3D/glass_of_milk_3d.png","🐕": "assets/Dog/3D/dog_3d.png","☔": "assets/Umbrella with rain drops/3D/umbrella_with_rain_drops_3d.png","🥞": "assets/Pancakes/3D/pancakes_3d.png","🪑": "assets/Chair/3D/chair_3d.png","💕": "assets/Two hearts/3D/two_hearts_3d.png","⛸": "assets/Ice skate/3D/ice_skate_3d.png","🌭": "assets/Hot dog/3D/hot_dog_3d.png","😠": "assets/Angry face/3D/angry_face_3d.png","👨": "assets/Man/Default/3D/man_3d_default.png","☝": "assets/Index pointing up/Default/3D/index_pointing_up_3d_default.png","📛": "assets/Name badge/3D/name_badge_3d.png","🌧": "assets/Cloud with rain/3D/cloud_with_rain_3d.png","🍊": "assets/Tangerine/3D/tangerine_3d.png","🚗": "assets/Automobile/3D/automobile_3d.png","🕒": "assets/Three oclock/3D/three_oclock_3d.png","🦵": "assets/Leg/Default/3D/leg_3d_default.png","❌": "assets/Cross mark/3D/cross_mark_3d.png","📚": "assets/Books/3D/books_3d.png","🏝": "assets/Desert island/3D/desert_island_3d.png","🏠": "assets/House/3D/house_3d.png","🍈": "assets/Melon/3D/melon_3d.png","🐻": "assets/Bear/3D/bear_3d.png","🚚": "assets/Delivery truck/3D/delivery_truck_3d.png","🧀": "assets/Cheese wedge/3D/cheese_wedge_3d.png","🦒": "assets/Giraffe/3D/giraffe_3d.png","📺": "assets/Television/3D/television_3d.png","🍅": "assets/Tomato/3D/tomato_3d.png","🩺": "assets/Stethoscope/3D/stethoscope_3d.png","🐮": "assets/Cow face/3D/cow_face_3d.png","📷": "assets/Camera/3D/camera_3d.png","⌚": "assets/Watch/3D/watch_3d.png","🕷": "assets/Spider/3D/spider_3d.png","🧂": "assets/Salt/3D/salt_3d.png","🏛": "assets/Classical building/3D/classical_building_3d.png","🧃": "assets/Beverage box/3D/beverage_box_3d.png","🍋": "assets/Lemon/3D/lemon_3d.png","🏫": "assets/School/3D/school_3d.png","😀": "assets/Grinning face/3D/grinning_face_3d.png","🥵": "assets/Hot face/3D/hot_face_3d.png","🌉": "assets/Bridge at night/3D/bridge_at_night_3d.png","🍽": "assets/Fork and knife with plate/3D/fork_and_knife_with_plate_3d.png","🦊": "assets/Fox/3D/fox_3d.png","🍯": "assets/Honey pot/3D/honey_pot_3d.png","🥢": "assets/Chopsticks/3D/chopsticks_3d.png","🐍": "assets/Snake/3D/snake_3d.png","🍀": "assets/Four leaf clover/3D/four_leaf_clover_3d.png","🥧": "assets/Pie/3D/pie_3d.png","🤗": "assets/Hugging face/3D/hugging_face_3d.png","🚤": "assets/Speedboat/3D/speedboat_3d.png","🍚": "assets/Cooked rice/3D/cooked_rice_3d.png","🦍": "assets/Gorilla/3D/gorilla_3d.png","🦕": "assets/Sauropod/3D/sauropod_3d.png","🚲": "assets/Bicycle/3D/bicycle_3d.png","👖": "assets/Jeans/3D/jeans_3d.png","💻": "assets/Laptop/3D/laptop_3d.png","🪆": "assets/Nesting dolls/3D/nesting_dolls_3d.png","🏋": "assets/Person lifting weights/Default/3D/person_lifting_weights_3d_default.png","👟": "assets/Running shoe/3D/running_shoe_3d.png","🍴": "assets/Fork and knife/3D/fork_and_knife_3d.png","📝": "assets/Memo/3D/memo_3d.png","🍳": "assets/Cooking/3D/cooking_3d.png","🐰": "assets/Rabbit face/3D/rabbit_face_3d.png","🏊": "assets/Person swimming/Default/3D/person_swimming_3d_default.png","✏": "assets/Pencil/3D/pencil_3d.png","🏎": "assets/Racing car/3D/racing_car_3d.png","🛋": "assets/Couch and lamp/3D/couch_and_lamp_3d.png","🤒": "assets/Face with thermometer/3D/face_with_thermometer_3d.png","📦": "assets/Package/3D/package_3d.png","❤": "assets/Red heart/3D/red_heart_3d.png","🗾": "assets/Map of japan/3D/map_of_japan_3d.png","🥦": "assets/Broccoli/3D/broccoli_3d.png","💯": "assets/Hundred points/3D/hundred_points_3d.png","🐷": "assets/Pig face/3D/pig_face_3d.png","🥈": "assets/2nd place medal/3D/2nd_place_medal_3d.png","🍃": "assets/Leaf fluttering in wind/3D/leaf_fluttering_in_wind_3d.png","🦺": "assets/Safety vest/3D/safety_vest_3d.png","🏯": "assets/Japanese castle/3D/japanese_castle_3d.png","☂": "assets/Umbrella/3D/umbrella_3d.png","🥗": "assets/Green salad/3D/green_salad_3d.png","🍫": "assets/Chocolate bar/3D/chocolate_bar_3d.png","👗": "assets/Dress/3D/dress_3d.png","🥁": "assets/Drum/3D/drum_3d.png","🖍": "assets/Crayon/3D/crayon_3d.png","⚪": "assets/White circle/3D/white_circle_3d.png","🔜": "assets/Soon arrow/3D/soon_arrow_3d.png","🔤": "assets/Input latin letters/3D/input_latin_letters_3d.png","☁": "assets/Cloud/3D/cloud_3d.png","🍒": "assets/Cherries/3D/cherries_3d.png","😢": "assets/Crying face/3D/crying_face_3d.png","🟡": "assets/Yellow circle/3D/yellow_circle_3d.png","🏃": "assets/Person running/Default/3D/person_running_3d_default.png","📞": "assets/Telephone receiver/3D/telephone_receiver_3d.png","🧸": "assets/Teddy bear/3D/teddy_bear_3d.png","🧗": "assets/Person climbing/Default/3D/person_climbing_3d_default.png","🦈": "assets/Shark/3D/shark_3d.png","🦘": "assets/Kangaroo/3D/kangaroo_3d.png","🏡": "assets/House with garden/3D/house_with_garden_3d.png","🩷": "assets/Pink heart/3D/pink_heart_3d.png","🍪": "assets/Cookie/3D/cookie_3d.png","🖊": "assets/Pen/3D/pen_3d.png","🥾": "assets/Hiking boot/3D/hiking_boot_3d.png","🏟": "assets/Stadium/3D/stadium_3d.png","✉": "assets/Envelope/3D/envelope_3d.png","🏦": "assets/Bank/3D/bank_3d.png","🎤": "assets/Microphone/3D/microphone_3d.png","🐦": "assets/Bird/3D/bird_3d.png","⭐": "assets/Star/3D/star_3d.png","🕐": "assets/One oclock/3D/one_oclock_3d.png","🥝": "assets/Kiwi fruit/3D/kiwi_fruit_3d.png","🦆": "assets/Duck/3D/duck_3d.png","🕖": "assets/Seven oclock/3D/seven_oclock_3d.png","👌": "assets/Ok hand/Default/3D/ok_hand_3d_default.png","👂": "assets/Ear/Default/3D/ear_3d_default.png","🌬": "assets/Wind face/3D/wind_face_3d.png","🛠": "assets/Hammer and wrench/3D/hammer_and_wrench_3d.png","🍍": "assets/Pineapple/3D/pineapple_3d.png","🌈": "assets/Rainbow/3D/rainbow_3d.png","🎾": "assets/Tennis/3D/tennis_3d.png","🥇": "assets/1st place medal/3D/1st_place_medal_3d.png","👒": "assets/Womans hat/3D/womans_hat_3d.png","🤖": "assets/Robot/3D/robot_3d.png","🤩": "assets/Star-struck/3D/star-struck_3d.png","⚫": "assets/Black circle/3D/black_circle_3d.png","☀": "assets/Sun/3D/sun_3d.png","😵": "assets/Knocked-out face/3D/knocked-out_face_3d.png","🪨": "assets/Rock/3D/rock_3d.png","💐": "assets/Bouquet/3D/bouquet_3d.png","🤝": "assets/Handshake/3D/handshake_3d.png","📏": "assets/Straight ruler/3D/straight_ruler_3d.png","🙏": "assets/Folded hands/Default/3D/folded_hands_3d_default.png","🐭": "assets/Mouse face/3D/mouse_face_3d.png","🌇": "assets/Sunset/3D/sunset_3d.png","🎵": "assets/Musical note/3D/musical_note_3d.png","🍵": "assets/Teacup without handle/3D/teacup_without_handle_3d.png","🧠": "assets/Brain/3D/brain_3d.png","🐟": "assets/Fish/3D/fish_3d.png","🥤": "assets/Cup with straw/3D/cup_with_straw_3d.png","🧼": "assets/Soap/3D/soap_3d.png"};
+const EMOJI_RE = /(?:\p{Extended_Pictographic}|\p{Regional_Indicator}{2}|[0-9#*]\uFE0F?\u20E3)(?:\uFE0F|\u200D\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*/gu;
+function emojiSrc(e) {
+  const p = EMOJI_IMG[e] || EMOJI_IMG[e.replace(/\uFE0F/g, '')] || EMOJI_IMG[e + '\uFE0F'];
+  return p ? EMOJI_BASE + encodeURI(p) : null;
+}
+function emojify(root) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) { EMOJI_RE.lastIndex = 0; if (EMOJI_RE.test(walker.currentNode.nodeValue)) nodes.push(walker.currentNode); }
+  nodes.forEach(node => {
+    const frag = document.createDocumentFragment();
+    let last = 0; const text = node.nodeValue;
+    text.replace(EMOJI_RE, (m, offset) => {
+      const src = emojiSrc(m);
+      if (!src) return m;
+      if (offset > last) frag.appendChild(document.createTextNode(text.slice(last, offset)));
+      const img = document.createElement('img');
+      img.className = 'emo'; img.src = src; img.alt = m; img.draggable = false;
+      img.onerror = () => { img.replaceWith(document.createTextNode(m)); }; // よみこめなかったら もとの えもじ
+      frag.appendChild(img);
+      last = offset + m.length;
+      return m;
+    });
+    if (last === 0) return;
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.replaceWith(frag);
+  });
+}
+// がめんが かわったら じどうで おきかえる
+['quiz-content', 'feedback-text'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new MutationObserver(() => emojify(el)).observe(el, { childList: true, subtree: true, characterData: true });
+});
+// ==== EMOJI-3D END ====
 
 setMuted(isMuted);
 document.getElementById('start-quiz-btn').innerHTML = `${ICON.play}<span>えいたんごクイズ</span><span class="btn-sub">4もん</span>`;
