@@ -315,6 +315,16 @@
     .tap-ripple { position: fixed; z-index: 1002; width: 70px; height: 70px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.95); box-shadow: 0 0 14px rgba(255,255,255,0.9), inset 0 0 10px rgba(255,255,255,0.6); pointer-events: none; }
     .tap-ripple.sound { width: 150px; height: 150px; border: 3px solid var(--accent); box-shadow: none; }
     .float-note { position: fixed; z-index: 1003; font-size: 2rem; font-weight: 900; pointer-events: none; text-shadow: 0 2px 0 #FFF, 0 0 8px #FFF; }
+    /* えいぶんの レベル えらび */
+    .level-select { width: 100%; padding: 6px; border-radius: 18px; background: rgba(255,255,255,0.85); box-shadow: 0 8px 18px var(--shadow); }
+    .blank { display: inline-flex; align-items: center; justify-content: center; min-width: 2.4em; height: 1.3em; margin: 0 0.15em; padding: 0 0.3em; border-radius: 0.35em; border: 2px dashed var(--accent); background: var(--option-bg); color: var(--accent-ink); font-size: 0.9em; vertical-align: middle; white-space: nowrap; }
+    .level-select h3 { margin: 0 0 8px; font-size: 1rem; color: var(--accent-ink); }
+    .level-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .btn-level { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 2px; border: none; border-radius: 16px; background: var(--option-bg); color: var(--ink); font-weight: 900; font-size: clamp(0.8rem, 3.6vw, 0.95rem); cursor: pointer; white-space: nowrap; transition: transform 0.12s; }
+    .btn-level small { font-size: 0.68rem; font-weight: 800; color: var(--ink-soft); }
+    .btn-level:active { transform: scale(0.95); }
+    .btn-level.active { color: #FFF; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 20px -8px var(--accent-2); }
+    .btn-level.active small { color: rgba(255,255,255,0.9); }
   </style>
 </head>
 <body>
@@ -338,6 +348,13 @@
       <div id="food-list" class="food-list"></div>
     </div>
     <div class="action-buttons">
+      <div id="level-select" class="level-select" style="display:none;">
+      <div class="level-buttons">
+        <button class="btn-level" data-level="1" onclick="setGrammarLevel(1)">きいて えらぶ<small>よめなくて OK</small></button>
+        <button class="btn-level" data-level="2" onclick="setGrammarLevel(2)">やさしい ぶん<small>みじかい ぶん</small></button>
+        <button class="btn-level" data-level="3" onclick="setGrammarLevel(3)">えいけん5きゅう<small>チャレンジ</small></button>
+      </div>
+      </div>
       <button id="start-quiz-btn" class="btn btn-primary btn-large">えいたんごクイズ（4もん）</button>
       <div class="sub-actions">
         <button id="mode-toggle-btn" class="btn btn-outline btn-small">えいぶんモード</button>
@@ -1458,7 +1475,7 @@ function updateStageBackground() {
 
 const SAVE_KEY = 'eigo-quiz-progress-v1';
 function renderRoom() {
-  saveProgress(SAVE_KEY, { isWordMode, wordState, grammarState, famVer: 'sky' });
+  saveProgress(SAVE_KEY, { isWordMode, wordState, grammarState, famVer: 'sky', grammarLevel });
   foodListEl.innerHTML = "";
   const currentPoke = getCurrentPoke();
   partnerImg.src = getPokemonImageUrl(currentPoke.id);
@@ -1818,7 +1835,9 @@ document.getElementById('mode-toggle-btn').onclick = () => {
     document.getElementById('start-quiz-btn').innerHTML = `${ICON.play}<span>えいたんごクイズ</span><span class="btn-sub">4もん</span>`;
     document.getElementById('mode-toggle-btn').innerHTML = `${ICON.swap}<span>えいぶんモード</span>`;
     resetGameBtn.innerHTML = `${ICON.retry}<span>イーブイに もどる</span>`;
+    document.getElementById('level-select').style.display = 'none';
   } else {
+    document.getElementById('level-select').style.display = 'block';
     document.body.classList.add('mode-grammar');
     if (grammarState.familyIdx === -1) initGrammarMode();
     document.getElementById('main-title').innerText = "えいぶんクイズ";
@@ -1859,29 +1878,58 @@ function showNextQuestion() {
   if (isWordMode) {
     renderWordModeQuestion(contentEl, roundWordQuestions[currentQIndex], currentQIndex + 1);
   } else {
-    if (currentQIndex === 0) { renderQ1(contentEl); }      
-    else if (currentQIndex === 1) { renderQ2(contentEl); } 
-    else if (currentQIndex === 2) { renderQ3(contentEl); } 
-    else if (currentQIndex === 3) { renderQ4(contentEl); } 
+    if (grammarLevel === 1) {
+      // きいて えらぶ：えいごを きいて えを えらぶ もんだいだけ
+      if (currentQIndex === 1) renderWordModeQuestion(contentEl, pickFresh(wordData.filter(w => w.emoji), 'listen-word'), 1);
+      else renderQ2(contentEl);
+    } else if (grammarLevel === 2) {
+      // やさしい ぶん：みじかい ぶん・3たく・あいさつ。えいぶんは じどうで よみあげる
+      if (currentQIndex === 0) renderQ1(contentEl, easyQ1, 'q1e', 3, true);
+      else if (currentQIndex === 1) renderQ2(contentEl);
+      else if (currentQIndex === 2) renderQ3(contentEl, easyQ3, 'q3e');
+      else renderQ4(contentEl, easyQ4, 'q4e', 3, true);
+    } else {
+      if (currentQIndex === 0) { renderQ1(contentEl); }
+      else if (currentQIndex === 1) { renderQ2(contentEl); }
+      else if (currentQIndex === 2) { renderQ3(contentEl); }
+      else if (currentQIndex === 3) { renderQ4(contentEl); }
+    }
   }
   buddyOnQuestion();
 }
 
-function renderQ1(container) {
-  const q = pickFresh(q1Data, 'q1');
+// えいぶんの レベル（1：きいて えらぶ ／ 2：やさしい ぶん ／ 3：えいけん5きゅう）
+let grammarLevel = 1;
+function setGrammarLevel(n) {
+  grammarLevel = n;
+  document.querySelectorAll('.btn-level').forEach(b => b.classList.toggle('active', Number(b.dataset.level) === n));
+  renderRoom();
+}
+const easyQ1 = q1Data.filter(q => q.text.length <= 24 && !q.text.includes('—'));
+const easyQ3 = q3Data.filter(q => q.words.length <= 4);
+const GREETING_QS = ['A: How are you?', 'A: Thank you.', 'A: Good morning.', 'A: Nice to meet you.', 'A: Here you are.', 'A: I am sorry.', 'A: See you tomorrow.', 'A: Happy birthday!', 'A: This is for you.', 'A: Good night.', 'A: See you.', "A: Let's play soccer!", 'A: Can I use your pen?'];
+const easyQ4 = q4Data.filter(q => GREETING_QS.includes(q.text));
+function limitOptions(options, correct, n) {
+  if (!n || options.length <= n) return options.slice();
+  return [correct, ...options.filter(o => o !== correct).sort(() => 0.5 - Math.random()).slice(0, n - 1)];
+}
+
+function renderQ1(container, list = q1Data, key = 'q1', nOpts = 4, autoSpeak = false) {
+  const q = pickFresh(list, key);
   const fullSentence = q.text.replace('( ___ )', q.correct);
   
   container.innerHTML = `
     <div class="q-head">
-      <p class="q-title">( ___ ) に はいる えいごは？</p>
+      <p class="q-title">「？」に はいる えいごは？</p>
       <button class="voice-btn" id="q1-voice">${ICON.speaker}</button>
     </div>
-    <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q1-opts"></div>
+    <div class="question-word">${q.text.replace('( ___ )', '<span class="blank">?</span>')}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q1-opts"></div>
   `;
   document.getElementById('q1-voice').onclick = () => speakWithBlank(q.text, 'en'); // こたえは いわない
+  if (autoSpeak) setTimeout(() => speakWithBlank(q.text, 'en'), 500);
   
   const optsGrid = document.getElementById('q1-opts');
-  q.options.slice().sort(() => 0.5 - Math.random()).forEach(opt => {
+  limitOptions(q.options, q.correct, nOpts).sort(() => 0.5 - Math.random()).forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = opt;
     if (opt === q.correct) btn.dataset.correct = '1';
     btn.onclick = () => checkAnswer(opt === q.correct, q.correct, fullSentence);
@@ -1910,8 +1958,8 @@ function renderQ2(container) {
   setTimeout(() => speakCuteVoice(q.text), 500);
 }
 
-function renderQ3(container) {
-  const q = pickFresh(q3Data, 'q3');
+function renderQ3(container, list = q3Data, key = 'q3') {
+  const q = pickFresh(list, key);
   const fullSentence = q.words.join(' ');
   let currentAns = [];
   
@@ -1964,8 +2012,8 @@ function renderQ3(container) {
   }, 0);
 }
 
-function renderQ4(container) {
-  const q = pickFresh(q4Data, 'q4');
+function renderQ4(container, list = q4Data, key = 'q4', nOpts = 4, autoSpeak = false) {
+  const q = pickFresh(list, key);
   const questionText = q.text.replace('A: ', '');
   
   container.innerHTML = `
@@ -1976,9 +2024,10 @@ function renderQ4(container) {
     <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q4-opts"></div>
   `;
   document.getElementById('q4-voice').onclick = () => speakEnglishVoice(questionText); // こたえは いわない
+  if (autoSpeak) setTimeout(() => speakEnglishVoice(questionText), 500);
   
   const optsGrid = document.getElementById('q4-opts');
-  q.options.slice().sort(() => 0.5 - Math.random()).forEach(opt => {
+  limitOptions(q.options, q.correct, nOpts).sort(() => 0.5 - Math.random()).forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = opt;
     if (opt === q.correct) btn.dataset.correct = '1';
     btn.onclick = () => checkAnswer(opt === q.correct, q.correct, '');
@@ -2267,6 +2316,7 @@ function emojify(root) {
 // ==== EMOJI-3D END ====
 
 setMuted(isMuted);
+document.querySelectorAll('.btn-level').forEach(b => b.classList.toggle('active', Number(b.dataset.level) === grammarLevel));
 document.getElementById('start-quiz-btn').innerHTML = `${ICON.play}<span>えいたんごクイズ</span><span class="btn-sub">4もん</span>`;
 document.getElementById('mode-toggle-btn').innerHTML = `${ICON.swap}<span>えいぶんモード</span>`;
 resetGameBtn.innerHTML = `${ICON.retry}<span>イーブイに もどる</span>`;
@@ -2275,6 +2325,8 @@ window.onload = () => {
   const saved = loadProgress(SAVE_KEY);
   if (saved && saved.wordState && saved.grammarState && saved.grammarState.familyIdx >= 0) {
     wordState = saved.wordState; grammarState = saved.grammarState;
+    if ([1, 2, 3].includes(saved.grammarLevel)) grammarLevel = saved.grammarLevel;
+    document.querySelectorAll('.btn-level').forEach(b => b.classList.toggle('active', Number(b.dataset.level) === grammarLevel));
     // ポケモンの なかまの リストが かわったので、まえの データなら えらびなおす（しんかの だんかいは そのまま）
     if (saved.famVer !== 'sky' || !pokemonFamilies[grammarState.familyIdx]) grammarState.familyIdx = Math.floor(Math.random() * pokemonFamilies.length);
     // まえの バージョン（えもじの ごはん）で ほぞんされていたら きのみに おきかえる
