@@ -167,6 +167,7 @@
     <div class="action-buttons">
       <button id="start-quiz-btn" class="btn btn-primary btn-large">えいたんごクイズ (4もん)</button>
       <button id="mode-toggle-btn" class="btn btn-outline btn-large" style="margin-top:5px;">🔄 えいぶんモードにきりかえ</button>
+      <button id="mute-btn" class="btn btn-outline btn-large" style="margin-top:5px;" onclick="setMuted(!isMuted)">🔇 おとを けす</button>
       <button id="reset-game-btn" class="btn btn-danger btn-large" style="margin-top:5px; display:none;">イーブイにもどる🔄</button>
     </div>
   </div>
@@ -435,7 +436,7 @@ function stopSpeech() {
 
 // parts: [{ text: "...", lang: "en" | "ja", pauseAfter: ミリびょう }]
 function speakSequence(parts) {
-  if (!hasSpeech) return;
+  if (!hasSpeech || isMuted) return;
   const wasBusy = window.speechSynthesis.speaking || window.speechSynthesis.pending;
   stopSpeech();
   const token = speechToken;
@@ -481,6 +482,31 @@ document.addEventListener('click', unlockSpeech, true);
 
 // こたえボタンの れんだ たいさく
 let answerLocked = false;
+
+// おとの オン・オフ（へやの「おとを けす」ボタン）
+const APP_ID = 'eigo';
+let isMuted = loadProgress(APP_ID + '-muted') === true;
+function setMuted(m) {
+  isMuted = m; saveProgress(APP_ID + '-muted', m);
+  if (m) stopSpeech();
+  const b = document.getElementById('mute-btn');
+  if (b) b.innerText = m ? '🔊 おとを だす' : '🔇 おとを けす';
+}
+
+// おなじ もんだいが つづけて でないように、さいきん でた もんだいを おぼえておく
+function pickFresh(list, name) {
+  const key = APP_ID + '-recent-' + name;
+  let recent = loadProgress(key);
+  if (!Array.isArray(recent)) recent = [];
+  recent = recent.filter(i => i < list.length);
+  const pool = list.map((_, i) => i).filter(i => !recent.includes(i));
+  const idx = pool.length ? pool[Math.floor(Math.random() * pool.length)] : Math.floor(Math.random() * list.length);
+  recent.push(idx);
+  const limit = Math.max(1, Math.floor(list.length / 2));
+  while (recent.length > limit) recent.shift();
+  saveProgress(key, recent);
+  return list[idx];
+}
 
 // すすみぐあいの ほぞん
 function saveProgress(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
@@ -597,7 +623,7 @@ function interactPokemon() {
   else if (rand === 3) { spawnEffects(); partnerImg.classList.add('anim-jump'); setTimeout(() => partnerImg.classList.remove('anim-jump'), 400); }
   else {
     const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${getCurrentPoke().id}.ogg`);
-    audio.volume = 0.5; audio.play().catch(e => console.log(e));
+    audio.volume = 0.5; if (!isMuted) audio.play().catch(e => console.log(e));
     partnerImg.classList.add('anim-shake'); setTimeout(() => partnerImg.classList.remove('anim-shake'), 400);
   }
 }
@@ -656,7 +682,7 @@ function evolveAnim(targetPoke) {
   document.getElementById('evolve-text').innerHTML = `おめでとう！<br>${targetPoke.name} に しんかした！`;
   document.getElementById('evolve-overlay').classList.add('show');
   const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${targetPoke.id}.ogg`);
-  audio.volume = 0.5; audio.play().catch(e => console.log(e));
+  audio.volume = 0.5; if (!isMuted) audio.play().catch(e => console.log(e));
   renderRoom();
 }
 
@@ -691,7 +717,7 @@ let roundWordQuestions = [];
 
 document.getElementById('start-quiz-btn').onclick = () => { 
   roomView.classList.add('hidden'); quizView.classList.remove('hidden'); currentQIndex = 0; 
-  if (isWordMode) roundWordQuestions = [...wordData].sort(() => 0.5 - Math.random()).slice(0, 4);
+  if (isWordMode) roundWordQuestions = [0, 1, 2, 3].map(() => pickFresh(wordData, 'word'));
   showNextQuestion(); 
 };
 
@@ -714,7 +740,7 @@ function showNextQuestion() {
 }
 
 function renderQ1(container) {
-  const q = q1Data[Math.floor(Math.random() * q1Data.length)];
+  const q = pickFresh(q1Data, 'q1');
   const fullSentence = q.text.replace('( ___ )', q.correct);
   
   container.innerHTML = `
@@ -735,7 +761,7 @@ function renderQ1(container) {
 }
 
 function renderQ2(container) {
-  const q = q2Data[Math.floor(Math.random() * q2Data.length)];
+  const q = pickFresh(q2Data, 'q2');
   container.innerHTML = `
     <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
       <p style="font-size:1.2rem; font-weight:800; margin:0;">おとをきいて、えらぼう！</p>
@@ -755,7 +781,7 @@ function renderQ2(container) {
 }
 
 function renderQ3(container) {
-  const q = q3Data[Math.floor(Math.random() * q3Data.length)];
+  const q = pickFresh(q3Data, 'q3');
   const fullSentence = q.words.join(' ');
   let currentAns = [];
   
@@ -796,7 +822,7 @@ function renderQ3(container) {
 }
 
 function renderQ4(container) {
-  const q = q4Data[Math.floor(Math.random() * q4Data.length)];
+  const q = pickFresh(q4Data, 'q4');
   const questionText = q.text.replace('A: ', '');
   
   container.innerHTML = `
@@ -911,6 +937,8 @@ function checkAnswer(isCorrect, answerEn, answerJa) {
     if (isCorrect) { currentQIndex++; showNextQuestion(); }
   }, 2500);
 }
+
+setMuted(isMuted);
 
 window.onload = () => {
   const saved = loadProgress(SAVE_KEY);
