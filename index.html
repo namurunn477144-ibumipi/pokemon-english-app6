@@ -249,7 +249,7 @@ const wordData = [
   { en: "One", ja: "いち", emoji: "1️⃣" }, { en: "Two", ja: "に", emoji: "2️⃣" }, { en: "Three", ja: "さん", emoji: "3️⃣" }, { en: "Four", ja: "よん", emoji: "4️⃣" }, { en: "Five", ja: "ご", emoji: "5️⃣" },
   { en: "Monday", ja: "げつようび", emoji: "📅" }, { en: "Sunday", ja: "にちようび", emoji: "📅" }, { en: "Today", ja: "きょう", emoji: "☀️" }, { en: "Tomorrow", ja: "あした", emoji: "🔜" }, { en: "Yesterday", ja: "きのう", emoji: "🔙" },
   { en: "Father", ja: "おとうさん", emoji: "👨" }, { en: "Mother", ja: "おかあさん", emoji: "👩" }, { en: "Teacher", ja: "せんせい", emoji: "🧑‍🏫" }, { en: "Police officer", ja: "けいさつかん", emoji: "👮" }, { en: "Doctor", ja: "おいしゃさん", emoji: "🧑‍⚕️" },
-  { en: "Book", ja: "ほん", emoji: "📖" }, { en: "Desk", ja: "つくえ", emoji: "🪑" }, { en: "Bag", ja: "かばん", emoji: "🎒" }, { en: "Shoes", ja: "くつ", emoji: "👟" }, { en: "Clock", ja: "とけい", emoji: "🕰️" },
+  { en: "Book", ja: "ほん", emoji: "📖" }, { en: "Chair", ja: "いす", emoji: "🪑" }, { en: "Bag", ja: "かばん", emoji: "🎒" }, { en: "Shoes", ja: "くつ", emoji: "👟" }, { en: "Clock", ja: "とけい", emoji: "🕰️" },
   { en: "School", ja: "がっこう", emoji: "🏫" }, { en: "Park", ja: "こうえん", emoji: "⛲" }, { en: "Hospital", ja: "びょういん", emoji: "🏥" }, { en: "Station", ja: "えき", emoji: "🚉" }, { en: "Supermarket", ja: "スーパー", emoji: "🛒" },
   { en: "Play", ja: "あそぶ", emoji: "⚽" }, { en: "Run", ja: "はしる", emoji: "🏃" }, { en: "Eat", ja: "たべる", emoji: "😋" }, { en: "Read", ja: "よむ", emoji: "📖" }, { en: "Sleep", ja: "ねる", emoji: "😴" },
   { en: "Big", ja: "おおきい", emoji: "🐘" }, { en: "Small", ja: "ちいさい", emoji: "🐭" }, { en: "Fast", ja: "はやい", emoji: "🏎️" }, { en: "Happy", ja: "うれしい", emoji: "😊" }, { en: "Cute", ja: "かわいい", emoji: "🎀" }
@@ -395,29 +395,97 @@ let isWordMode = true;
 let wordState = { exp: 0, keys: 0, isEvolved: false, partnerId: 133, partnerName: "イーブイ", foods: [] };
 let grammarState = { exp: 0, keys: 0, stage: 0, familyIdx: -1, foods: [] };
 
+// =========================================================
+// ▼▼ よみあげ（こえ）の しくみ ▼▼
+//  - あたらしく しゃべる まえに、まえの こえを かならず とめる
+//  - 「まえはん → ま → うしろはん」の よみあげも、つぎの もんだいに すすんだら とめる
+//  - iPhone は さいしょの タップで こえを「じゅんび」しておく
+// =========================================================
+const VOICE_PREFS = {
+  en: ["Samantha", "Karen", "Google US English", "Microsoft Aria", "Microsoft Jenny", "Microsoft Zira"],
+  ja: ["Kyoko", "O-Ren", "Google 日本語", "Microsoft Nanami", "Microsoft Haruka"]
+};
+const VOICE_SETTINGS = { en: { rate: 0.8, pitch: 1.1 }, ja: { rate: 0.95, pitch: 1.1 } };
+const hasSpeech = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
 let synthVoices = [];
-window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
+let speechToken = 0;
+let speechTimers = [];
+let currentUtterance = null; // とちゅうで こえが きえないように さんしょうを もっておく
 
-// =========================================================
-// ▼▼ アイフォン対応の声とマイクの設定 ▼▼
-// =========================================================
-function speakEnglishVoice(text) {
-  if (!text) return;
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = 'en-US';
-  
-  if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
-  
-  // iPhoneの優しくて綺麗な声「Samantha（サマンサ）」を指名！
-  let friendlyVoice = synthVoices.find(v => v.name === "Samantha" || v.name === "Karen");
-  if (!friendlyVoice) friendlyVoice = synthVoices.find(v => v.lang.startsWith('en'));
-  if (friendlyVoice) msg.voice = friendlyVoice;
-  
-  msg.pitch = 1.3;  // 高くて可愛い声にする魔法の数字
-  msg.rate = 0.55;  // 子供むけにゆっくり
-  
-  window.speechSynthesis.speak(msg);
+function loadVoices() { if (hasSpeech) synthVoices = window.speechSynthesis.getVoices(); }
+if (hasSpeech) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
+
+function pickVoice(lang) {
+  if (synthVoices.length === 0) loadVoices();
+  const norm = (v) => (v.lang || '').replace('_', '-').toLowerCase();
+  const matches = synthVoices.filter(v => norm(v).startsWith(lang));
+  for (const name of VOICE_PREFS[lang]) {
+    const v = matches.find(v => v.name.includes(name));
+    if (v) return v;
+  }
+  const region = lang === 'en' ? 'en-us' : 'ja-jp';
+  return matches.find(v => norm(v) === region) || matches[0] || null;
 }
+
+function stopSpeech() {
+  speechToken++;
+  speechTimers.forEach(clearTimeout); speechTimers = [];
+  if (hasSpeech && (window.speechSynthesis.speaking || window.speechSynthesis.pending)) window.speechSynthesis.cancel();
+}
+
+// parts: [{ text: "...", lang: "en" | "ja", pauseAfter: ミリびょう }]
+function speakSequence(parts) {
+  if (!hasSpeech) return;
+  const wasBusy = window.speechSynthesis.speaking || window.speechSynthesis.pending;
+  stopSpeech();
+  const token = speechToken;
+  const list = parts.filter(p => p && p.text && String(p.text).trim());
+  const playAt = (i) => {
+    if (token !== speechToken || i >= list.length) return;
+    const p = list[i];
+    const msg = new SpeechSynthesisUtterance(p.text);
+    msg.lang = p.lang === 'en' ? 'en-US' : 'ja-JP';
+    const voice = pickVoice(p.lang);
+    if (voice) msg.voice = voice;
+    const s = VOICE_SETTINGS[p.lang];
+    msg.rate = s.rate; msg.pitch = s.pitch;
+    msg.onend = () => {
+      if (token !== speechToken) return;
+      speechTimers.push(setTimeout(() => playAt(i + 1), p.pauseAfter || 0));
+    };
+    currentUtterance = msg;
+    window.speechSynthesis.speak(msg);
+  };
+  // とめた ちょくごに すぐ しゃべると むしされる たんまつが あるので すこし まつ
+  if (wasBusy) speechTimers.push(setTimeout(() => playAt(0), 120));
+  else playAt(0);
+}
+function speakText(text, lang) { speakSequence([{ text, lang }]); }
+function speakEnglishVoice(text) { speakText(text, 'en'); }
+function speakJapaneseVoice(text) { speakText(text, 'ja'); }
+// ことばの ( ___ ) を「ま」に して よむ
+function speakWithBlank(text, lang) {
+  const parts = text.split('( ___ )');
+  speakSequence([{ text: parts[0].trim(), lang, pauseAfter: 900 }, { text: (parts[1] || '').trim(), lang }]);
+}
+
+function unlockSpeech() {
+  document.removeEventListener('touchend', unlockSpeech, true);
+  document.removeEventListener('click', unlockSpeech, true);
+  if (!hasSpeech || window.speechSynthesis.speaking) return;
+  const u = new SpeechSynthesisUtterance(' '); u.volume = 0;
+  window.speechSynthesis.speak(u);
+}
+document.addEventListener('touchend', unlockSpeech, true);
+document.addEventListener('click', unlockSpeech, true);
+
+// こたえボタンの れんだ たいさく
+let answerLocked = false;
+
+// すすみぐあいの ほぞん
+function saveProgress(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
+function loadProgress(key) { try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+// =========================================================
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -471,7 +539,9 @@ function updateStageBackground() {
   }
 }
 
+const SAVE_KEY = 'eigo-quiz-progress-v1';
 function renderRoom() {
+  saveProgress(SAVE_KEY, { isWordMode, wordState, grammarState });
   foodListEl.innerHTML = "";
   const currentPoke = getCurrentPoke();
   partnerImg.src = getPokemonImageUrl(currentPoke.id);
@@ -628,7 +698,7 @@ document.getElementById('start-quiz-btn').onclick = () => {
 function showNextQuestion() {
   if (currentQIndex >= 4) { 
     if (isWordMode) { wordState.keys++; } else { grammarState.keys++; }
-    quizView.classList.add('hidden'); roomView.classList.remove('hidden'); renderRoom(); return; 
+    quizView.classList.add('hidden'); roomView.classList.remove('hidden'); renderRoom(); return;
   }
   const contentEl = document.getElementById('quiz-content'); contentEl.innerHTML = "";
   document.getElementById('quiz-progress-text').innerText = `だい ${currentQIndex + 1} もん！`;
@@ -654,7 +724,7 @@ function renderQ1(container) {
     </div>
     <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q1-opts"></div>
   `;
-  document.getElementById('q1-voice').onclick = () => speakCuteVoice(fullSentence);
+  document.getElementById('q1-voice').onclick = () => speakWithBlank(q.text, 'en'); // こたえは いわない
   
   const optsGrid = document.getElementById('q1-opts');
   q.options.slice().sort(() => 0.5 - Math.random()).forEach(opt => {
@@ -706,29 +776,23 @@ function renderQ3(container) {
     q.words.slice().sort(() => 0.5 - Math.random()).forEach(word => {
       const btn = document.createElement('div'); btn.className = 'sort-word-btn'; btn.innerText = word;
       btn.onclick = () => {
+        if (btn.classList.contains('selected') || answerLocked) return;
         btn.classList.add('selected'); currentAns.push(word);
         const placedBtn = document.createElement('div'); placedBtn.className = 'sort-word-btn'; placedBtn.innerText = word;
-        placedBtn.onclick = () => { placedBtn.remove(); btn.classList.remove('selected'); currentAns = currentAns.filter(w => w !== word); };
+        placedBtn.onclick = () => { if (answerLocked) return; placedBtn.remove(); btn.classList.remove('selected'); const i = currentAns.indexOf(word); if (i >= 0) currentAns.splice(i, 1); };
         sortArea.appendChild(placedBtn);
-        if (currentAns.length === q.words.length) { setTimeout(() => checkAnswer(currentAns.join(' ') === fullSentence, fullSentence, q.ja), 300); }
+        if (currentAns.length === q.words.length) {
+          setTimeout(() => {
+            const ok = currentAns.join(' ') === fullSentence;
+            checkAnswer(ok, fullSentence, q.ja);
+            if (!ok) setTimeout(createSortButtons, 2600); // まちがえたら ならべなおせるように もどす
+          }, 300);
+        }
       };
       sortWordsBox.appendChild(btn);
     });
   };
   createSortButtons(); resetSortBtn.onclick = () => createSortButtons();
-}
-
-// 【ゆっくり丁寧な英語読み上げ】rate: 0.55 に設定！
-function speakWithPause(text1, text2) {
-  const msg1 = new SpeechSynthesisUtterance(text1); msg1.lang = 'en-US';
-  if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
-  const cuteVoice = synthVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Female')));
-  if (cuteVoice) msg1.voice = cuteVoice; 
-  msg1.pitch = 1.0; 
-  msg1.rate = 0.55; // さらにゆっくりに調整
-  
-  msg1.onend = () => { setTimeout(() => { speakCuteVoice(text2); }, 1000); };
-  window.speechSynthesis.speak(msg1);
 }
 
 function renderQ4(container) {
@@ -742,7 +806,7 @@ function renderQ4(container) {
     </div>
     <div class="question-word">${q.text}</div><p class="question-ja">${q.ja}</p><div class="options-grid" id="q4-opts"></div>
   `;
-  document.getElementById('q4-voice').onclick = () => speakWithPause(questionText, q.correct);
+  document.getElementById('q4-voice').onclick = () => speakEnglishVoice(questionText); // こたえは いわない
   
   const optsGrid = document.getElementById('q4-opts');
   q.options.slice().sort(() => 0.5 - Math.random()).forEach(opt => {
@@ -759,21 +823,35 @@ function renderWordModeQuestion(container, qData, qType) {
     document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
     createWordPictureOptions(qData, container.querySelector('#word-opts')); setTimeout(() => speakCuteVoice(qData.en), 500);
   } else if (qType === 2) { 
-    container.innerHTML = `<p style="font-size:1.2rem; font-weight:800;">マイクでおして、えいごで いってみよう！</p><div class="question-emoji" style="font-size:5rem;">${qData.emoji}</div><div class="question-word">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">🎤</button><button class="voice-btn" id="word-voice-btn" style="margin-top:10px;">🔊</button><div style="margin-top:20px; padding-top:15px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとがOKをだす ⭕</button></div>`;
+    container.innerHTML = `<p style="font-size:1.2rem; font-weight:800;">マイクでおして、えいごで いってみよう！</p><div class="question-emoji" style="font-size:5rem;">${qData.emoji}</div><div class="question-word">${qData.en}</div><p class="question-ja">（${qData.ja}）</p><button class="mic-btn" id="mic-btn">🎤</button><button class="voice-btn" id="word-voice-btn" style="margin-top:10px;">🔊</button><p id="mic-hint" style="min-height:1.5em; font-weight:800; color:#666; margin:8px 0 0;"></p><div style="margin-top:20px; padding-top:15px; border-top:2px dashed #EEE;"><button class="btn btn-parent" id="parent-ok-btn">おうちのひとがOKをだす ⭕</button></div>`;
     document.getElementById('word-voice-btn').onclick = () => speakCuteVoice(qData.en);
     document.getElementById('parent-ok-btn').onclick = () => checkAnswer(true, qData.en, qData.ja);
     const micBtn = document.getElementById('mic-btn');
     micBtn.onclick = () => {
-      if (micBtn.classList.contains('listening')) return;
+      if (micBtn.classList.contains('listening') || answerLocked) return;
+      const hint = document.getElementById('mic-hint');
+      stopSpeech();
       try {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US'; recognition.interimResults = false; recognition.maxAlternatives = 1; micBtn.classList.add('listening');
+        recognition.lang = 'en-US'; recognition.interimResults = false; recognition.maxAlternatives = 5; micBtn.classList.add('listening');
+        hint.innerText = 'きいてるよ…';
+        let gotResult = false;
+        const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const numWords = { one: '1', two: '2', three: '3', four: '4', five: '5' };
+        const targets = [norm(qData.en)];
+        if (numWords[targets[0]]) targets.push(numWords[targets[0]]);
         recognition.onresult = (e) => {
-          micBtn.classList.remove('listening'); const spoken = e.results[0][0].transcript.toLowerCase().replace(/[^a-z0-9]/g, ''), target = qData.en.toLowerCase().replace(/[^a-z0-9]/g, '');
-          checkAnswer(spoken.includes(target) || target.includes(spoken) || spoken.length > 0, qData.en, qData.ja);
+          gotResult = true; micBtn.classList.remove('listening'); hint.innerText = '';
+          const heard = Array.from(e.results[0]).map(r => norm(r.transcript));
+          const ok = heard.some(h => targets.some(t => h.includes(t)));
+          if (ok) checkAnswer(true, qData.en, qData.ja);
+          else { hint.innerText = 'おしい！もういちど いってみよう'; speakEnglishVoice(qData.en); }
         };
-        recognition.onerror = () => micBtn.classList.remove('listening'); recognition.onspeechend = () => recognition.stop(); recognition.onnomatch = () => micBtn.classList.remove('listening'); recognition.start();
-      } catch(e) { micBtn.classList.remove('listening'); }
+        recognition.onerror = () => { micBtn.classList.remove('listening'); };
+        recognition.onend = () => { micBtn.classList.remove('listening'); if (!gotResult) hint.innerText = 'きこえなかったよ。もういちど 🎤を おしてね'; };
+        recognition.onspeechend = () => recognition.stop();
+        recognition.start();
+      } catch(e) { micBtn.classList.remove('listening'); hint.innerText = 'マイクが つかえないみたい。おうちのひとに OKを もらってね'; }
     };
     setTimeout(() => speakCuteVoice(qData.en), 500);
   } else if (qType === 3) { 
@@ -798,26 +876,19 @@ function createWordTextOptions(correctData, container) {
   const options = [correctData, ...wordData.filter(w => w.en !== correctData.en).sort(() => 0.5 - Math.random()).slice(0, 2)].sort(() => 0.5 - Math.random());
   options.forEach(opt => {
     const btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerHTML = `<span style="font-size:2rem; font-weight:900;">${opt.en}</span>`;
-    btn.onclick = () => { speakCuteVoice(opt.en); setTimeout(() => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja), 500); }; 
+    btn.onclick = () => checkAnswer(opt.en === correctData.en, correctData.en, correctData.ja);
     container.appendChild(btn);
   });
 }
 
-// 【ゆっくり丁寧な英語読み上げ】rate: 0.55
-function speakCuteVoice(text) {
-  const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US';
-  if (synthVoices.length === 0) synthVoices = window.speechSynthesis.getVoices();
-  const cuteVoice = synthVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Female')));
-  if (cuteVoice) msg.voice = cuteVoice; 
-  msg.pitch = 1.0; 
-  msg.rate = 0.55; // さらにゆっくりに調整
-  window.speechSynthesis.speak(msg);
-}
+function speakCuteVoice(text) { speakEnglishVoice(text); }
 
 const correctVoices = ["Good job!", "Excellent!", "Perfect!", "Great!", "Awesome!"];
 const incorrectVoices = ["Oh no", "Try again", "Oops", "Almost"];
 
 function checkAnswer(isCorrect, answerEn, answerJa) {
+  if (answerLocked) return;
+  answerLocked = true;
   const overlay = document.getElementById('feedback-overlay'), icon = document.getElementById('feedback-icon'), text = document.getElementById('feedback-text');
   let speakText = "";
   if (isCorrect) {
@@ -826,14 +897,31 @@ function checkAnswer(isCorrect, answerEn, answerJa) {
     text.style.color = "var(--correct)"; speakText = correctVoices[Math.floor(Math.random() * correctVoices.length)];
   } else {
     icon.innerText = "❌"; icon.style.color = "var(--incorrect)";
-    text.innerHTML = `${incorrectTexts[Math.floor(Math.random() * incorrectTexts.length)]}<br><span style="font-size:1rem; color:#666; display:block; margin-top:15px;">せいかいは：</span><span style="font-size:1.8rem; color:var(--primary-shadow); display:block;">${answerEn}</span><span style="font-size:1.2rem; color:var(--text-main);">${answerJa}</span>`;
+    // まちがえた ときは こたえを みせずに、もういちど かんがえて もらう
+    text.innerHTML = `${incorrectTexts[Math.floor(Math.random() * incorrectTexts.length)]}<br><span style="font-size:1.2rem; color:#666; display:block; margin-top:15px;">もういちど かんがえてみよう！</span>`;
     text.style.color = "var(--incorrect)"; speakText = incorrectVoices[Math.floor(Math.random() * incorrectVoices.length)];
   }
-  overlay.classList.add('show'); speakCuteVoice(speakText);
-  setTimeout(() => { overlay.classList.remove('show'); if (isCorrect) { currentQIndex++; showNextQuestion(); } }, 2500); 
+  overlay.classList.add('show');
+  // せいかいの ときは ほめことばの あとに こたえの えいごを もういちど きかせる
+  if (isCorrect && answerEn) speakSequence([{ text: speakText, lang: 'en', pauseAfter: 300 }, { text: answerEn, lang: 'en' }]);
+  else speakEnglishVoice(speakText);
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    answerLocked = false;
+    if (isCorrect) { currentQIndex++; showNextQuestion(); }
+  }, 2500);
 }
 
-window.onload = () => { initWordMode(); initGrammarMode(); renderRoom(); };
+window.onload = () => {
+  const saved = loadProgress(SAVE_KEY);
+  if (saved && saved.wordState && saved.grammarState && saved.grammarState.familyIdx >= 0) {
+    wordState = saved.wordState; grammarState = saved.grammarState;
+  } else {
+    initWordMode(); initGrammarMode();
+  }
+  if (saved && saved.isWordMode === false) document.getElementById('mode-toggle-btn').onclick(); // えいぶんモードで おわっていたら もどす
+  else renderRoom();
+};
 </script>
 </body>
 </html>
